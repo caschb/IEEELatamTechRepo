@@ -7,3 +7,5 @@ slurm-*.out
 *.err
 check-*.out
 smoke*.out
+validation/
+timings_*.csv

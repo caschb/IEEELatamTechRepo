@@ -1,28 +1,27 @@
 [project]
 name = "hpc-course"
-version = "0.1.0"
-description = "Environment for the Modern Parallel Programming in Python for HPC and AI workshop"
-requires-python = ">=3.12,<3.13"
+version = "0.2.0"
+description = "Authoring and validation environment for the Modern Parallel Programming in Python workshop (Colab edition)"
+requires-python = ">=3.12"
+# Students do not install this project. They run the notebooks in Google Colab,
+# where the setup cell installs only what is listed in colab_requirements.txt.
+# This project exists so that an author can regenerate the .ipynb files from the
+# .py sources and execute every core notebook headless in CPU mode.
 dependencies = [
-    "numpy>=2.2,<2.4",   # CuPy 14 still uses numpy.row_stack, gone in newer NumPy
-    "scipy>=1.15",
+    "numpy>=2.0",
     "numba>=0.61",
-    "numba-cuda>=0.12",
-    "cuda-bindings>=12,<13",   # nukwa driver is CUDA 12; the 13.x bindings warn on every import
-    "cupy-cuda12x>=13.4",
-    "mpi4py>=4.0",
-    "dask[distributed]>=2025.1",
-    "joblib>=1.4",
-    "jupyterlab>=4.3",
-    "ipykernel>=6.29",
-    "matplotlib>=3.10",
+    "matplotlib>=3.9",
     "line-profiler>=4.2",
-    "psutil>=7",
-    "dask-jobqueue>=0.9",
+    "psutil>=6",
+    "joblib>=1.4",
     "jupytext>=1.16",
+    "nbconvert>=7.16",
+    "ipykernel>=6.29",
+    "jupyterlab>=4.3",
 ]
 
-[tool.uv]
-# mpi4py must link against the cluster's Open MPI module, not a bundled MPI,
-# or mpirun and the Python ranks will disagree about the runtime.
-no-binary-package = ["mpi4py"]
+[project.optional-dependencies]
+# Only for validating the GPU branch on an author machine with an NVIDIA GPU.
+# Colab GPU runtimes ship CuPy preinstalled; the notebooks fall back to
+# cupy-cuda12x only if the import fails there.
+gpu = ["cupy-cuda12x>=13.4"]

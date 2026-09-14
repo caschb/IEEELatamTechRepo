@@ -1,0 +1,9 @@
+# Minimal Colab runtime recipe. The setup cell of every notebook installs only
+# the packages from this list whose import fails on the current runtime, so on
+# a standard Colab runtime the installation is usually a no-op or a single
+# small package. Versions are deliberately unpinned: Colab updates its base
+# image, and the tested versions are recorded in data/reference_timings/.
+numba
+line_profiler
+# GPU runtimes only, and only if `import cupy` fails (Colab preinstalls it):
+# cupy-cuda12x
