@@ -8,15 +8,16 @@ para que los resultados grabados nunca sean confundidos con los de ejecución en
 
 | Archivo | Producido por | Usado por |
 |---|---|---|
-| `01_threads.csv` | cuaderno 01, "Checkpoint 3" | cuaderno 01, sección de escalado de hilos, cuando no se pueden probar más de dos cantidades de hilos |
-| `02_gpu.csv` | cuaderno 02, "Checkpoint 2" | cuaderno 02, secciones de recorrido de tamaño y transferencia, en modo de relleno de CPU |
+| `01_threads.csv` | cuaderno 01, "Punto de control 3" | cuaderno 01, sección de escalado de hilos, cuando no se pueden probar más de dos cantidades de hilos |
+| `02_gpu.csv` | cuaderno 02, "Punto de control 2" | cuaderno 02, secciones de recorrido de tamaño y transferencia, en modo de relleno de CPU |
 | `04_capstone.csv` | cuaderno 04 | solo para referencia del instructor |
 
 ## Estado: datos intermedios
 
 Los archivos actuales provienen del equipo del autor (CPU de 32 núcleos, NVIDIA GeForce RTX 4090, registrados en las líneas de
-metadata), **no provienen de Google Colab**. Existen para que el camino de relleno se ejecute de principio a fin. La
-relevo 4 en `instructor/validation.md` reemplaza estos con una ejecución de GPU documentada en Colab:
+metadatos), **no provienen de Google Colab**. Existen para comprobar de principio a
+fin el modo alternativo. La
+relevación 4 en `instructor/validation.md` reemplace estos con una ejecución de GPU documentada en Colab:
 
 1. Abra los cuadernos 01 y 02 en Colab en un nuevo entorno de ejecución de GPU, ejecute todas las celdas.
 2. Descargue `timings_01_cpu.csv` y `timings_02_gpu.csv` desde la pestaña de Archivos.
@@ -28,4 +29,4 @@ Los cuadernos obtienen los archivos desde la rama `main` de este repositorio a t
 
 ## Grabación del demostración de GPU
 
-Grabar la ejecución del instructor del cuaderno 02 con GPU (captura de pantalla, 5 a 8 minutos, desde "Cambiar tipo de ejecución" hasta la tabla de tiempos finales) y poner el enlace en `instructor/run_of_show.md`. La grabación es el segundo relleno, después de esta tabla, para los estudiantes sin GPU.
+Grabar la ejecución del cuaderno 02 del instructor con GPU (captura de pantalla, 5 a 8 minutos, desde "Cambiar tipo de ejecución" hasta la tabla de tiempos finales) y poner el enlace en `instructor/run_of_show.md`. La grabación es el segundo relleno, después de esta tabla, para los estudiantes sin GPU.

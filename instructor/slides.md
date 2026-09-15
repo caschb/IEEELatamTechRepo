@@ -13,16 +13,16 @@ Tres horas, un ejemplo en ejecución, todo en Colab.
 
 # Resultados
 
-1. Establece un resultado de referencia correcto y mide repetidas ejecuciones de manera justa.
-2. Compara Python, NumPy y compilado Numba; explica por qué más hilos no ayudarían.
-3. Ejecuta una operación de array con CuPy, comprueba que funciona y separa el tiempo de cálculo del tiempo incluido en transferencia.
-4. Explica cuando los hilos separados deben comunicarse y elige un administrador de tareas o comunicación de mensajes según sea necesario.
+1. Establezca un resultado de referencia correcto y mida repetidas ejecuciones de manera justa.
+2. Compare Python, NumPy y compilado Numba; explique por qué más hilos no ayudarían.
+3. Ejecute una operación de array con CuPy, compruebe que funciona y separe el tiempo de cálculo del tiempo incluido en transferencia.
+4. Explicar cuando los hilos separados deben comunicarse y elija un administrador de tareas o comunicación de mensajes según sea necesario.
 
 No se busca un aceleramiento específico. Resultados correctos, explicados.
 
 ---
 
-# Ejemplo de ejecución: un stencil de difusión de calor
+# Ejemplo de ejecución: un cálculo por vecindad de difusión de calor
 
 - Una cuadrícula `n x n`, la parte superior fija en 100, las demás en 0.
 - Cada paso: cada celda interior se convierte en la media de sus cuatro vecinos.
@@ -37,10 +37,10 @@ Las cortesías son vistas. Cada `+` asigna un array intermedio.
 
 ---
 
-# ¿Qué contiene un tiempo de ejecución
+# ¿Qué contiene un tiempo de ejecución?
 
 - **Calentamiento** primero: compilación, importaciones, cachés, asignaciones.
-- **Repetir**; reporta el mínimo (menos interferencia) o el mediano (típico). Decile qué.
+- **Repetir**; informe el mínimo (menos interferencia) o el mediano (típico). Indíquele qué.
 - `%timeit` imprime **promedio y desviación estándar** entre ejecuciones; `.best` a petición.
 - **Mismo experimento**: mismo tiempo de ejecución, carga de trabajo, tipo de dato, pasos.
 - En un GPU: **sincronizar** antes de comenzar y antes de detener el cronómetro.
@@ -58,7 +58,7 @@ Un número de otra máquina es un experimento diferente.
 La fracción serial establece el techo. En la práctica, el techo llega antes:
 la banda ancha de memoria, la coordinación, los núcleos compartidos.
 
-Para nuestro stencil, una mala ajuste a Amdahl suele ser **la banda ancha de memoria**, no
+Para nuestro cálculo por vecindad, una mala ajuste a Amdahl suele ser **la banda ancha de memoria**, no
 el código serial.
 
 ---
@@ -73,19 +73,19 @@ el código serial.
 
 - Mover datos una vez, hacer mucho cálculo, mover de vuelta una vez.
 - `cp.asarray` dentro de un bucle suele ser más lento que NumPy.
-- Reporta **tiempo de cálculo solo** y **incluido transferencia** separadamente.
+- Informe **tiempo de cálculo solo** y **incluido transferencia** separadamente.
 
 ---
 
 # Escala de tiempo, en una sola diapositiva
 
-| escala | incluye |
+| Escala | Incluye |
 |---|---|
-| tiempo de cálculo solo | cálculos en datos ya en el dispositivo, sincronización en ambos extremos |
-| incluido transferencia | subida, cálculos, bajada, sincronización en ambos extremos |
-| equivocado | lanzamiento solo, no sincronización |
+| Tiempo de cálculo solo | Cálculos en datos ya en el dispositivo, sincronización en ambos extremos |
+| Incluido transferencia | Subida, cálculos, bajada, sincronización en ambos extremos |
+| Erroneo | Lanzamiento solo, no sincronización |
 
-"40x más rápido": sincronización? transferencias dentro? mismo carga de trabajo y tipo de dato?
+"40x más rápido": sincronización? Transferencias dentro? Mismo carga de trabajo y tipo de dato?
 
 ---
 
@@ -109,7 +109,7 @@ el código serial.
 
 # Dos modelos de programación
 
-- **Comunicación por mensajes (MPI, `mpi4py`)**: cada rango ejecuta el mismo script; escribiste las mensajería. Simulaciones enlazadas, halos, comunicación personalizada.
+- **Comunicación por mensajes (MPI, `mpi4py`)**: cada rango ejecute el mismo script; escribió las mensajería. Simulaciones enlazadas, halos, comunicación personalizada.
 - **Administración de tareas (Dask, arrays de tareas)**: tareas independientes, resultados recopilados.
   Sweep de parámetros, archivos, faldas; datos más grandes que una máquina.
 
@@ -194,7 +194,7 @@ Un tiempo sin su hardware no es un resultado. Igual que en los cuadernos 01 y 02
 
 # Tabla de decisiones
 
-| Tienes | Llama a |
+| Situación | Herramienta |
 |---|---|
 | Recorres los elementos de un array | NumPy primero, luego Numba `@njit` |
 | El mismo bucle, varios núcleos | Numba `parallel=True` + `prange`, hilos <= núcleos |
@@ -214,4 +214,4 @@ Un tiempo sin su hardware no es un resultado. Igual que en los cuadernos 01 y 02
 - Una fracción serial establece el aceleramiento (Amdahl).
 - La descomposición está limitada por la comunicación (`2P/n` grande, la latencia domina).
 
-Encuentra qué uno **antes** de pedir más máquinas.
+Encuentre qué uno **antes** de pedir más máquinas.

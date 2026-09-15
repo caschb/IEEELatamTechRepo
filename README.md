@@ -2,8 +2,8 @@
 
 Taller práctico de tres horas sobre cómo medir y acelerar código Python en CPU
 multinúcleo y GPU, y sobre los cambios necesarios cuando el trabajo abarca varias
-máquinas (temas 3, 5, 7, 8 y 9 del taller IEEE Latam). **Todo se ejecuta en
-Google Colab.** No se requieren una cuenta de clúster, SSH ni instalación local.
+máquinas (temas 3, 5, 7, 8 y 9 de IEEE Latam Tech). Todo se ejecuta en
+Google Colab. No se requieren una cuenta de clúster, SSH ni instalación local.
 
 ## 1. Antes del evento: preparación (45 a 60 minutos, tiempo de ejecución en CPU)
 
@@ -26,22 +26,22 @@ consultar primero el [repaso opcional](prep/python_numpy_refresher.md).
 
 | Tiempo | Min | Bloque | Notebook |
 |---|---:|---|---|
-| 00:00 | 10 | Bienvenida, objetivos, chequeo de preparación, recapitulación del stencil | [`00_stencil_practice`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) (solo recapitulación) |
+| 00:00 | 10 | Bienvenida, objetivos, chequeo de preparación, recapitulación del cálculo por vecindad | [`00_stencil_practice`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) (solo recapitulación) |
 | 00:10 | 25 | Medición: tiempos repetidos, calentamiento, demostración de perfilado, base de NumPy | [`01_measure_and_multicore`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/01_measure_and_multicore.ipynb) |
 | 00:35 | 35 | Numba, `prange`, comparación de hilos, Amdahl | mismo notebook |
 | 01:10 | 10 | Descanso (guardar el trabajo) | |
-| 01:20 | 5 | Cambio a un runtime de GPU, configuración, verificación del dispositivo | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
-| 01:25 | 20 | Stencil con CuPy, sincronización, barrido de tamaños, transferencias, precisión | mismo notebook |
+| 01:20 | 5 | Cambio a un entorno de ejecución de GPU, configuración, verificación del dispositivo | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
+| 01:25 | 20 | Cálculo por vecindad con CuPy, sincronización, barrido de tamaños, transferencias, precisión | mismo notebook |
 | 01:45 | 20 | Más allá de una máquina: particiones, halos, comunicación, roles de MPI y Dask | [`03_parallel_models`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/03_parallel_models.ipynb) |
 | 02:05 | 20 | Proyecto final: elegir y justificar una implementación | [`04_capstone`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/04_capstone.ipynb) |
 | 02:25 | 10 | Revisión, preguntas, pasos siguientes | |
 | 02:25 | 15 | marimo Notebook EDA + ML | [`05_marimo`](https://molab.marimo.io/notebooks/nb_uXzyncAb9w2ZT27r2FuLdN) |
 
 Cada notebook es autónomo: su primera celda de código instala lo que falta y debe
-ejecutarse de nuevo después de reiniciar el runtime. Los tiempos se comparan
-**dentro de un mismo runtime**; un valor de otra máquina corresponde a otro experimento.
+ejecutarse de nuevo después de reiniciar el entorno de ejecución. Los tiempos se comparan
+**dentro de un mismo entorno de ejecución**; un valor de otra máquina corresponde a otro experimento.
 
-**¿No hay GPU disponible?** Se puede continuar en el runtime de CPU. El notebook
+**¿No hay GPU disponible?** Se puede continuar en el entorno de ejecución de CPU. El notebook
 02 lo detecta, ejecuta las celdas de CPU y muestra una tabla registrada en GPU,
 identificada con el hardware correspondiente. También hay una grabación de la
 demostración en GPU.
@@ -50,7 +50,7 @@ demostración en GPU.
 
 - Diapositivas: [`instructor/slides.md`](instructor/slides.md)
 - Extensiones opcionales (no se cubren en vivo):
-  [hilos, procesos y el GIL](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_gil_and_task_pools.ipynb) y, en un runtime de GPU, [escribir un kernel CUDA](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_cuda_kernel.ipynb)
+  [hilos, procesos y el GIL](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_gil_and_task_pools.ipynb) y, en un entorno de ejecución de GPU, [escribir un kernel CUDA](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_cuda_kernel.ipynb)
 - Guía de lectura para MPI y Dask más allá de una máquina: [`instructor/reading_guide_mpi_dask.md`](instructor/reading_guide_mpi_dask.md)
 - Soluciones: [`solutions/`](solutions/)
 
@@ -96,9 +96,9 @@ Python básico (funciones, bucles, listas), una cuenta de Google y un navegador.
 | `instructor/validation.md` | Criterios de publicación y verificaciones manuales de Colab que el script no realiza |
 | `notebooks/*.py` | Fuentes de los notebooks en formato porcentual de Jupytext; a partir de ellas se generan los archivos `.ipynb` |
 | `notebooks/05_polars_dataframes.py` | Cuaderno 05: aplicación **marimo**, no Jupytext. No se convierte a `.ipynb`; se valida con `marimo export html` |
-| `tools/validate.sh` | Regenera cada notebook y ejecuta los principales en modo fallback de CPU y en modo GPU |
+| `tools/validate.sh` | Regenera cada notebook y ejecuta los principales en modo alternativo de CPU y en modo GPU |
 | `env/` | Entorno de autoría (`uv`) y lista mínima de paquetes para Colab |
-| `data/reference_timings/` | Tablas de tiempos registradas con metadatos del runtime, utilizadas por el fallback de CPU |
+| `data/reference_timings/` | Tablas de tiempos registradas con metadatos del entorno de ejecución, utilizadas por el modo alternativo de CPU |
 
 Ciclo de autoría:
 

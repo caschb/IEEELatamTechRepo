@@ -1,11 +1,9 @@
 # %% [markdown]
-# # 0b. Ejemplo de ejecución: un stencil de difusión de calor (SOLUCIÓN)
+# # 0b. Ejemplo de ejecución: un cálculo por vecindad de difusión de calor (SOLUCIÓN)
 #
 # Cada sesión del taller utiliza un pequeño programa, para que podamos dedicar
 # el tiempo en vivo a su medición y aceleración, en lugar de explicarlo. Este
-# notebook muestra lo que hace. No se asume ningún conocimiento de física o métodos numéricos. Cadena de ejecución estándar de CPU.
-#
-# Guarda una copia en Drive primero (**File > Guardar una copia en Drive**).
+# notebook muestra lo que hace. No se asume ningún conocimiento de física o métodos numéricos. **Entorno de ejecución** estándar de CPU.
 
 # %%
 import numpy as np
@@ -20,12 +18,11 @@ u = init_grid(8)
 print(u)
 
 # %% [markdown]
-# ## ¿Qué una sola etapa hace
+# ¿Qué hace una sola etapa?
 #
-# Imagina una placa metálica cuadrada. La parte superior está caliente. En cada etapa, cada celda interior toma el **promedio de sus cuatro vecinos** (arriba, abajo, izquierda, derecha). La calor se extiende hacia abajo desde la parte caliente, una fila por etapa al principio. Las celdas de la borda nunca cambian: son las condiciones de contorno.
+# Imagina una placa metálica cuadrada. La parte superior está caliente. En cada etapa, cada celda interior toma el promedio de sus cuatro vecinos (arriba, abajo, izquierda, derecha). La calor se extiende hacia abajo desde la parte caliente, una fila por etapa al principio. Las celdas de la borda nunca cambian: son las condiciones de contorno.
 #
-# Esta es la misma regla escrita con bucles directos. Aunque su ejecución es lenta,
-# permite comprobar cada operación y por eso se usa como **referencia**.
+# Esta es la misma regla escrita con bucles directos. Aunque su ejecución sea lenta, permite comprobar cada operación y por eso se usa como referencia.
 
 # %%
 def step_python(u, unew):
@@ -40,7 +37,7 @@ after_one = step_python(u.tolist(), u.tolist())
 print(np.array(after_one))
 
 # %% [markdown]
-# ## Visualising it
+# ## Visualízalo
 
 # %%
 def run_python(n, iters):
@@ -57,14 +54,7 @@ for ax, iters in zip(axes, (0, 10, 100)):
 fig.colorbar(im, ax=axes, label="temperature"); plt.show()
 
 # %% [markdown]
-# ## Ejercicio: el mismo paso con slices de NumPy
-#
-# Loops en Python son lentos. NumPy nos permite actualizar todas las celdas interiores de una vez con
-# **slices**. `u[1:-1, 1:-1]` son todas las celdas interiores. Su vecino *arriba* es
-# `u[:-2, 1:-1]` (las filas desplazadas hacia arriba por una unidad), su vecino *abajo* es `u[2:, 1:-1]`,
-# y su vecino *izquierda* es `u[1:-1, :-2]`.
-#
-# **Complete the fourth term**: el vecino *derecha*. Reemplaza el placeholder y ejecuta la celda. (Sugerencia: desplaza las columnas, no las filas.)
+# El vecino *derecha* de las celdas interiores se encuentra en `u[1:-1, 2:]`.
 
 # %%
 def step_numpy(u, unew):
@@ -75,11 +65,11 @@ def step_numpy(u, unew):
 # %% [markdown]
 # ## Comprobación con la referencia
 #
-# Se aplican dos comprobaciones. La primera verifica que la suma interior tras un
+# Se aplican dos comprobaciones. La primera verifica que la suma interior después de un
 # paso en una cuadrícula de 8x8 sea `150.0` (seis celdas interiores de la fila 1,
 # con un valor de 25 cada una). Esta prueba no detecta todos los errores porque casi
-# todas las celdas siguen en cero. La segunda compara la cuadrícula completa después
-# de 20 pasos con la versión basada en bucles.
+# todas las celdas siguen en cero. La segunda compara la cuadrícula completa después de
+# 20 pasos con la versión basada en bucles.
 
 # %%
 u = init_grid(8)
@@ -104,9 +94,9 @@ else:
 # %% [markdown]
 # ## Qué recordar para la sesión
 #
-# - `init_grid(n)`: `n x n` grid, con borde caliente en la parte superior, cero en el resto.
-# - `step_*(u, unew)`: lee `u`, escribe `unew`; el llamador intercambia ellos en cada paso.
+# - `init_grid(n)`: Crea una cuadrícula `n x n`, con un borde caliente en la parte superior y ceros en el resto.
+# - `step_*(u, unew)`: Lee el contenido de `u`, escribe en `unew`; el llamador intercambia estos en cada paso.
 # - La versión en Python puro es el punto de referencia. Cada versión más rápida debe coincidir con ella,
 #   y la comprobaremos antes de medir cualquier cosa.
 #
-# Guarda el notebook. Luego lee `prep/self_check.md`.
+# Guarde el notebook. Luego lea el archivo `prep/self_check.md`.

@@ -1,13 +1,13 @@
 # %% [markdown]
-# # 4. Capstone: elige y justifica una implementación
+# # 4. Proyecto final: elija y justifica una implementación
 #
 # **Sesión en vivo, bloque 8 (02:30 a 02:50).** Trabaja en un entorno de ejecución CPU; las filas de GPU aparecen solo si está disponible. Autocontenidos: se definen de nuevo todas las funciones de los notebooks 1 y 2.
 #
-# Tienes dos cargas de trabajo. Para **cada una**, produce tres cosas:
+# Se proponen dos cargas de trabajo. Para **cada una**, prepare tres elementos:
 #
 # 1. un chequeo de correctitud contra la referencia,
 # 2. una tabla de tiempos en este entorno de ejecución, con la descripción del entorno de ejecución,
-# 3. dos frases de recomendación en la última celda de markdown, ligadas a tus números, no a las diapositivas.
+# 3. dos frases de recomendación en la última celda de markdown, ligadas a sus números, no a las diapositivas.
 #
 # No hay objetivo de aceleración. Has logrado si produciste resultados correctos y explicas lo que midiste.
 
@@ -103,9 +103,11 @@ print("candidates:", list(CANDIDATES))
 # %% [markdown]
 # ## Workload A (CPU): muchas simulaciones pequeñas e independientes
 #
-# 48 grids de lado 128, 30 pasos cada uno, cada uno con una temperatura de borde superior diferente. Nothing es compartido entre los grids. El referente es NumPy.
+# 48 cuadrículas de lado 128, 30 pasos cada uno, cada uno con una temperatura de borde superior diferente. Nothing es compartido entre las cuadrículas. El referente es NumPy.
 #
-# **Decide:** cual candidato, y por qué? Considera que los grids son pequeños, y que `numba_par` gasta sus hilos *dentro* de uno solo de los grids. Llena en `CHOICE_A`, luego ejecuta las celdas. Puedes añadir un candidato propio a `CANDIDATES` (por ejemplo, un bucle plano sobre los grids dentro de una función `@njit(parallel=True)`).
+# **Decida:** ¿cuál candidato conviene y por qué? Considere que las cuadrículas son
+# pequeñas y que `numba_par` distribuye los hilos dentro de una sola cuadrícula.
+# Complete `CHOICE_A` y ejecute las celdas. Puede añadir otro candidato a `CANDIDATES`.
 
 # %%
 TEMPS = np.linspace(50, 150, 48)
@@ -126,9 +128,9 @@ for name in ["numpy", "numba", "numba_par"]:            # <- CHOICE_A: edit this
 # %% [markdown]
 # ## Trabajo de carga B: una gran simulación unificada
 #
-# Una cuadrícula de lado 2048, 40 pasos. En un entorno de ejecución con GPU, el candidato de CuPy se mide tanto **solo de cálculo** como **inclusivo de transferencia** (subida una vez, cálculo, bajada una vez). Sin GPU, compara los candidatos de CPU y utiliza la tabla de GPU registrada en el cuaderno 2 para la discusión.
+# Una cuadrícula de lado 2048 y 40 pasos. En un entorno con GPU, el candidato de CuPy se mide tanto **solo durante el cálculo** como **incluyendo las transferencias** (una carga, el cálculo y una descarga). Sin GPU, compare los candidatos de CPU y utilice la tabla de GPU registrada en el cuaderno 2 para la discusión.
 #
-# **Decide:** qué candidato para este trabajo de carga, y si el resultado debe regresar al CPU después de cada 40 pasos, ¿cambia la respuesta?
+# **Decida:** ¿qué candidato conviene para esta carga? ¿Cambia la respuesta si el resultado debe volver a la CPU después de cada 40 pasos?
 
 # %%
 N_B, ITERS_B = 2048, 40
@@ -159,11 +161,11 @@ save_timings("timings_04_capstone.csv", ["workload", "impl", "n", "iters", "task
 # %% [markdown]
 # ## Recomendación (edite esta celda)
 #
-# **Runtime:** *(paste the runtime description printed by the setup cell)*
+# **Entorno de ejecución:** *(paste the entorno de ejecución description printed by the configuration cell)*
 #
-# **Carga de Trabajo A (48 pequeños grids independientes):** Usaría ... porque en este
-# runtime tomó ... versus ... . Los hilos dentro de un solo pequeño grid ayudaron / no ayudaron porque ... . Si tuviera un cluster, esta carga de trabajo se asignaría a ... (manejador de tareas / comunicación por mensajería) porque los grids intercambian ... bytes.
+# **Carga de Trabajo A (48 pequeños cuadrículas independientes):** Usaría ... porque en este
+# entorno de ejecución tomó ... versus ... . La participación de los hilos dentro de un solo pequeño cuadrícula ayudó / no ayudó porque ... . Si tuviera un cluster, esta carga de trabajo se asignaría a ... (manejador de tareas / comunicación por mensajería) porque las cuadrículas intercambian ... bytes.
 #
-# **Carga de Trabajo B (un grid de 2048x2048):** Usaría ... porque ... . El tiempo de transferencia incluida fue ... del tiempo de cálculo solo, por lo que mover el resultado de vuelta cada 40 pasos cambiaría / no cambiaría la decisión.
+# **Carga de Trabajo B (un cuadrícula de 2048x2048):** Usaría ... porque ... . El tiempo de transferencia incluido fue ... del tiempo de cálculo solo, por lo que mover el resultado de vuelta cada 40 pasos cambiaría / no cambiaría la decisión.
 #
 # **Una cosa más que el hardware no arreglaría:** ...

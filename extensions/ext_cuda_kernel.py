@@ -1,16 +1,9 @@
 # %% [markdown]
-# # Extensión B: escribe tu propio kernel con numba.cuda (opcional)
+# # Extensión B: Escriba su propio kernel con numba.cuda (opcional)
 #
-# **Requiere un entorno de ejecución con GPU.** CuPy oculta el kernel. A veces
-# es necesario tu propio: una operación que no es una composición de operaciones
-# de array, o una donde los intermediarios de CuPy (cuatro por paso de stencil)
-# cuestan demasiado. El modelo mental: una función de Python se ejecuta una vez
-# por **hilo**, y cada hilo pregunta "¿Qué elemento soy?".
+# Requiere un entorno de ejecución con GPU. CuPy oculta el kernel. A veces es necesario su propio: una operación que no es una composición de operaciones de array, o una donde los intermediarios de CuPy (paso de cálculo por vecindad) cuestan demasiado. El modelo mental: una función de Python se ejecuta una vez por **hilo**, y cada hilo pregunta "¿Qué elemento soy?".
 #
-# *Estado: extensión opcional. El objetivo de Numba CUDA se movió a la
-# separada paquete `numba-cuda`; este cuaderno instala el paquete si es necesario.
-# La compatibilidad de ese paquete con Colab debe ser comprobada separadamente
-# antes de recomendar este cuaderno a los estudiantes.*
+# *Estado: extensión opcional. El objetivo de Numba CUDA se movió a la separada paquete `numba-cuda`; este cuaderno instala el paquete si es necesario. La compatibilidad de ese paquete con Colab debe ser comprobada separadamente antes de recomendar este cuaderno a los estudiantes.*
 
 # %%
 import importlib, importlib.util, subprocess, sys, time
@@ -74,4 +67,5 @@ for n in (512, 1024, 2048):
         print(f"n={n:5d} {dtype.__name__}: CuPy {t_cupy*1e3:7.2f} ms   numba.cuda kernel {t_kern*1e3:7.2f} ms")
 
 # %% [markdown]
-# La kernel en mano lee cada entrada una vez y escribe una vez; la versión de CuPy materializa los intermedios. Dependiendo de la tamaño y el cartón: revisa la relación que midiste, en lugar de asumir. La misma historia de NumPy vs. Numba desde la sesión de CPU, un nivel más abajo.
+# El kernel escrito directamente lee y escribe cada elemento una vez; la versión de
+# CuPy crea arrays intermedios. Compare la relación medida para cada tamaño y GPU.

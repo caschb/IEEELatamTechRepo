@@ -1,13 +1,14 @@
 # %% [markdown]
-# # Extensión A: hilos, procesos y el GIL (opcional, no cubierto en vivo)
+# # Extensión A: Hilos, Procesos y el GIL (opcional, no cubierto en vivo)
 #
-# La función `prange` de Numba funciona porque el código compilado no sosten
+# La función `prange` de Numba funciona porque el código compilado no sostiene
 # el Lock Global Interpreter (GIL) de Python. El código Python sí lo hace, por lo que
 # las *threads* de Python no ejecutan código Python en paralelo. Esta extensión observa
-# una tarea independiente que se ejecuta de tres formas diferentes. El tiempo de ejecución en CPU; el número de trabajadores se adapta al tiempo de ejecución.
+# una tarea independiente que se ejecuta de tres formas diferentes. El número de
+# procesos se adapta al entorno de ejecución del sistema de CPU.
 #
 # *Estado: extensión opcional, validada en una máquina del autor, no parte del
-# sesión de 180 minutos. Si no se ejecuta en tu Colab, déjala de lado.*
+# sesión de 180 minutos. Si no se ejecuta en su sesión de Colab, puede omitirla.*
 
 # %%
 import os, time
@@ -37,9 +38,8 @@ with ProcessPoolExecutor(WORKERS) as ex:
     t_procs = timed(f"{WORKERS} processes", lambda: list(ex.map(slow_python_task, seeds)))
 
 # %% [markdown]
-# Resultado típico en una máquina con varios núcleos: las hilos no son más rápidos que
-# serial (toman turnos para obtener una licencia), los procesos son más rápidos (cada uno tiene su propio intérprete y licencia) pero pagan por iniciar y para serializar los argumentos y los resultados.
-# En un entorno de ejecución con solo CPU, ninguno de los tres puede ser más rápido que serial. Lo que veas, la regla es: los procesos para tareas puramente Python que son gruesas (uno por archivo, uno por conjunto de parámetros); los hilos para código compilado o con liberación del GIL (como `@njit(nogil=True)`, la mayoría de NumPy, lectura y escritura en archivos y red).
+# Resultado típico en una máquina con varios núcleos: los hilos no son más rápidos que el serial (toman turnos para obtener una licencia), los procesos son más rápidos (cada uno tiene su propio intérprete y licencia) pero pagan por iniciar y para serializar los argumentos y los resultados.
+# En un entorno de ejecución con solo CPU, ninguno de los tres puede ser más rápido que el serial. La regla es: los procesos para tareas puramente Python que son gruesas (uno por archivo, uno por conjunto de parámetros); los hilos para código compilado o con liberación del GIL (como `@njit(nogil=True)`, la mayoría de NumPy, lectura y escritura en archivos y red).
 #
 # ## joblib: la misma idea con una ergonomía mejorada
 
@@ -52,7 +52,7 @@ from joblib import Parallel, delayed
 t_joblib = timed(f"joblib, {WORKERS} workers", lambda: Parallel(n_jobs=WORKERS)(delayed(slow_python_task)(s) for s in seeds))
 
 # %% [markdown]
-# ## Tarea compilada que libera el GIL
+# ## Tarea compilada que libera el Mutex Global Interpreter Lock
 
 # %%
 from numba import njit
@@ -71,5 +71,4 @@ with ThreadPoolExecutor(WORKERS) as ex:
     t_c_threads = timed(f"compiled, {WORKERS} threads", lambda: list(ex.map(compiled_task, seeds)))
 
 # %% [markdown]
-# Con `nogil=True`, las hilas pueden ejecutar la función compilada al mismo tiempo, por lo que
-# en un entorno de múltiples núcleos, la versión en hilas gana sin serialización y sin inicio de proceso. Este es el mecanismo que `prange` utiliza internamente.
+# Con `nogil=True`, las hilas pueden ejecutar la función compilada al mismo tiempo, por lo que en un entorno de múltiples núcleos, la versión en hilas gana sin serialización y sin inicio de proceso. Este es el mecanismo que `prange` utiliza internamente.

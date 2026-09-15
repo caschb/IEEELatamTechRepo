@@ -1,20 +1,20 @@
 # %% [markdown]
 # # 0a. ¿Está mi Colab listo? (preparación, 10 a 15 minutos)
 #
-# Objetivo: Antes del workshop, asegúrate de poder abrir, ejecutar, editar y guardar
-# un cuaderno en Google Colab, y que las paquetes que el curso necesita instalen en
-# un **runtime estándar CPU**. No necesitas una GPU para esto. Un chequeo completo de
+# Objetivo: Antes del evento, compruebe que puede abrir, ejecutar, editar y guardar
+# un cuaderno en Google Colab, y que las paquetes necesarias para el curso instalen en
+# un **entorno de ejecución estándar CPU**. No es necesario tener una GPU para esto. Un chequeo completo de
 # la CPU es todo lo que se requiere para la preparación.
 #
-# ## Paso 1: haz tu propia copia
+# ## Paso 1: haga su propia copia
 #
-# El Colab abrió este cuaderno de forma sololectiva desde GitHub. Haz clic en el cuadro
-# abajo y presiona **Archivo > Guardar una copia en Drive** para que tus ediciones y
-# salidas se mantengan. Trabaja con la copia desde ahora.
+# El Colab abrió este cuaderno de forma sololectiva desde GitHub. Haga clic en el cuadro
+# abajo y presione **Archivo > Guardar una copia en Drive** para que sus ediciones y
+# salidas se mantengan. Trabaje con la copia desde ahora.
 #
-# ## Paso 2: ejecuta un cuadro
+# ## Paso 2: ejecute un cuadro
 #
-# Haz clic en el cuadro debajo y presiona **Shift+Enter** (o el botón de reproducción).
+# Haga clic en el cuadro debajo y presione **Shift+Enter** (o el botón de reproducción).
 
 # %%
 print("Hello from Colab. This cell ran.")
@@ -22,7 +22,7 @@ print("Hello from Colab. This cell ran.")
 # %% [markdown]
 # ## Paso 3: editar una celda
 #
-# Cambia el número en el siguiente celda a tu número favorito, luego ejecútala. El
+# Cambie el número en la siguiente celda a su número favorito, luego ejecute la celda. El
 # check en la línea segunda debería decir `PASS`.
 
 # %%
@@ -30,12 +30,12 @@ favourite = 7            # <- change this
 print("PASS: you edited and ran a cell" if favourite != 7 else "not yet: change the number and run again")
 
 # %% [markdown]
-# ## Step 4: instalar lo que necesita el curso
+# ## Paso 4: instalar lo que necesita el curso
 #
 # Cada cuaderno de notebook de curso comienza con una celda de configuración como esta. Importa cada
 # paquete y lo instala con pip **sólo si la importación falla**, así que en una
-# runtime estándar de Colab, generalmente es rápido. Deberás ejecutarla de nuevo cada vez que la
-# runtime se reinicie, porque una runtime nueva no tiene ninguna de tus instalaciones.
+# entorno de ejecución estándar de Colab, generalmente es rápido. Deberás ejecutarla de nuevo cada vez que la
+# entorno de ejecución se reinicie, ya que una entorno de ejecución nueva no tiene ninguna de sus instalaciones.
 
 # %%
 import importlib, importlib.util, os, platform, subprocess, sys
@@ -55,9 +55,9 @@ ensure("line_profiler")
 print("all packages import")
 
 # %% [markdown]
-# ## Step 5: revisa la máquina que te dieron
+# ## Paso 5: revisar la máquina que le dieron
 #
-# Colab te entrega diferentes máquinas virtuales en diferentes momentos. Saber lo que tienes es parte de medir de manera honesta.
+# Colab asigna diferentes máquinas virtuales en momentos diferentes. Registrar la máquina asignada permite interpretar correctamente las mediciones.
 
 # %%
 IN_COLAB = "COLAB_RELEASE_TAG" in os.environ or "google.colab" in sys.modules
@@ -69,7 +69,7 @@ print("Numba thread cap ", numba.config.NUMBA_NUM_THREADS)
 print("RAM              ", round(psutil.virtual_memory().total / 2**30, 1), "GB")
 
 # %% [markdown]
-# ## Step 6: una función compilada muy pequeña
+# ## Paso 6: Una función compilada muy pequeña
 #
 # Este verifica que Numba puede compilar en este entorno de ejecución. La primera llamada tarda unos segundos (compilación); la segunda es rápida.
 
@@ -91,19 +91,19 @@ assert np.isclose(r1, (x * x).sum())
 print(f"first call (compiles): {t_first*1e3:7.1f} ms   second call: {t_second*1e3:6.1f} ms   PASS")
 
 # %% [markdown]
-# ## Paso 7: reiniciar y volver a ejecutar
+# ## Paso 7: Reiniciar y volver a ejecutar
 #
-# Elige **Runtime > Reiniciar sesión**, luego **Runtime > Ejecutar todo**. Todo
+# Elija **Entorno de ejecución > Reiniciar sesión**, luego **Entorno de ejecución > Ejecutar todo**. Todo
 # lo que está arriba debería pasar de nuevo sin que hagas nada más. Eso es exactamente
-# lo que harás durante el taller si se desconecta un runtime.
+# lo que deberá hacer durante el evento si se desconecta el entorno de ejecución.
 #
-# Si en cambio elige **Runtime > Desconectar y eliminar runtime**, la próxima ejecución
+# Si en cambio elija **Entorno de ejecución > Desconectar y eliminar entorno de ejecución**, la próxima ejecución
 # tendrá que instalar de nuevo los paquetes. Eso es esperado.
 #
-# ## Paso 8: informe de estado
+# ## Paso 8: Informe de estado
 #
-# Ejecuta la celda debajo y mantén su salida. Si algo falló, péguela donde el README de
-# preparación te indique cómo reportar problemas.
+# Ejecute la celda siguiente y conserve la salida. Si algo falla, péguela donde el README de preparación
+# indique cómo informar problemas.
 
 # %%
 report = {
@@ -113,7 +113,7 @@ report = {
     "numba_compiles": bool(np.isclose(r1, r2)),
 }
 print("STATUS " + " ".join(f"{k}={v}" for k, v in report.items()))
-print("READY for the workshop" if report["numba_compiles"] else "NOT READY: see the error above")
+print("READY for IEEE Latam Tech" if report["numba_compiles"] else "NOT READY: see the error above")
 
 # %% [markdown]
-# **Done.** Guarda el cuaderno (Ctrl+S). Siguiente: `00_stencil_practice`.
+# **Listo.** Guarde el notebook (Ctrl+S). Continúe con `00_stencil_practice`.

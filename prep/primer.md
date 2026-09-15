@@ -1,6 +1,6 @@
 # Primer: las cinco ideas que el taller construye sobre (15 minutos)
 
-Lee esto antes del evento. Cada sección termina con una frase para recordar.
+Lea esto antes del evento. Cada sección termina con una frase para recordar.
 
 ## 1. Arrays: forma, corte, dtype, vistas y copias
 
@@ -11,7 +11,7 @@ El corte selecciona un rectángulo sin copiarlo. `u[1:-1, 1:-1]` es cada fila
 excepto la primera y última, y cada columna excepto la primera y última: la
 **interior**. Desplazando un corte por uno selecciona a los vecinos del interior:
 
-| corte | selecciona |
+| Corte | Selecciona |
 |---|---|
 | `u[:-2, 1:-1]` | la celda **arriba** de cada celda interior |
 | `u[2:, 1:-1]` | la celda **abajo** de cada celda interior |
@@ -21,14 +21,14 @@ excepto la primera y última, y cada columna excepto la primera y última: la
 Todos cuatro tienen la misma forma que el interior, así que pueden sumarse.
 
 Un corte es una **vista**: comparte memoria con el original, así que escribir en él
-cambia el original. La aritmética es diferente: `a + b` asigna un **nuevo
+cambie el original. La aritmética es diferente: `a + b` asigna un **nuevo
 array** para el resultado, incluso si `a` y `b` son vistas. Cuatro sumas producen
 cuatro arrays temporales. Eso importa para la velocidad más tarde.
 
 `dtype` decide los bytes por número. `float64` es el tipo por defecto; `float32`
 reduce el espacio de memoria y el tráfico en la mitad, a costa de precisión.
 
-*Recuerda: los cortes son vistas gratuitas; la aritmética asigna.*
+*Recuerde: los cortes son vistas gratuitas; la aritmética asigna.*
 
 ## 2. La memoria del CPU y la memoria del GPU son lugares diferentes
 
@@ -39,7 +39,7 @@ ver el resultado desde Python, debe copiarse de vuelta. La conexión entre los d
 en el taller, se ve exactamente como NumPy pero mantiene sus arrays en el GPU; las
 copias son `cp.asarray(x)` (arriba) y `x.get()` (abajo).
 
-*Recuerda: mueve la data una vez, realiza mucho cálculo, mueve de vuelta una vez.*
+*Recuerde: mueva la datos una vez, realiza mucho cálculo, mueva de vuelta una vez.*
 
 ## 3. La concurrencia no es paralelismo
 
@@ -51,7 +51,7 @@ de bloqueo (el GIL) permite que una hilo ejecute Python a la vez. El código com
 paralelamente en hilas. Las **procesos** separados siempre son paralelas pero no comparten
 memoria, así que los datos deben copiarse a ellos.
 
-*Recuerda: las hilas para el código compilado, los procesos para el código de Python, y
+*Recuerde: las hilas para el código compilado, los procesos para el código de Python, y
 medir.*
 
 ## 4. Speedup y la ley de Amdahl
@@ -73,30 +73,30 @@ El 10% serial pone el techo del speedup a 10, independientemente de cuánto hard
 añadas. En la práctica, el techo llega antes, porque el parte paralelo también comparte
 la banda ancha de memoria y paga por la coordinación.
 
-*Recuerda: la fracción serial pone el techo; encuentrala antes de comprar núcleos.*
+*Recuerde: la fracción serial pone el techo; encuentrala antes de comprar núcleos.*
 
-## 5. ¿Qué mide una medición de tiempo?
+## 5. ¿Qué mida una medición de tiempo?
 
-Una medición solo es significativa si puedes decir qué estaba dentro del reloj:
+Una medición solo es significativa si puede decir qué estaba dentro del reloj:
 
 - **Calentamiento.** La primera llamada paga por la compilación, las importaciones y los
   cachés. Tiene en cuenta las llamadas posteriores.
-- **Repetición.** Toma varias repeticiones y reporta el mínimo (menos interferencia)
+- **Repetición.** Toma varias repeticiones y informe el mínimo (menos interferencia)
   o el mediano (típico); diga qué repeticiones.
 - **Ámbito.** Para un GPU: el reloj incluyó la copia de datos al y desde el
   dispositivo? Esperó que el GPU terminara (`sincronizar`) antes de detener el
   reloj? Una llamada de GPU devuelve **antes** de que el trabajo esté hecho.
 - **El mismo experimento.** La misma máquina, el mismo tamaño de problema, el mismo
-  `dtype`, el mismo número de pasos. De lo contrario, estás comparando dos cosas diferentes.
+  `dtype`, el mismo número de pasos. De lo contrario, está comparando dos cosas diferentes.
 
-*Recuerda: calienta, repite, sincroniza, y diga qué contenía el reloj.*
+*Recuerde: calienta, repite, sincronice, y diga qué contenía el reloj.*
 
 ## Cuatro preguntas para comprobarse a sí mismo
 
 1. ¿Cuál corte selecciona la celda **abajo** de cada celda interior de `u`?
-2. Si `v = u[1:-1, 1:-1]` y haces `v[:] = 0`, ¿`u` cambia?
+2. Si `v = u[1:-1, 1:-1]` y hace `v[:] = 0`, ¿`u` cambia?
 3. Un programa es 25% serial. ¿Cuál es su speedup con 4 núcleos? Con núcleos infinitos?
 4. Tiemblas `y = f(x_gpu)` y obtienes 0.01 ms. ¿Qué probablemente está mal?
 
 Respuestas: 1. `u[2:, 1:-1]`. 2. Sí; `v` es una vista. 3. `1/(0.25+0.75/4) = 2.29`;
-no más de 4. 4. El reloj se detuvo antes de que el GPU terminara; sincroniza primero.
+no más de 4. 4. El reloj se detuvo antes de que el GPU terminara; sincronice primero.

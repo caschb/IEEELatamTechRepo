@@ -7,12 +7,12 @@
 #
 # 1. **¿Dónde va el tiempo?** Medir. La intuición suele estar equivocada.
 # 2. **¿Cuál es el techo?** Ley de Amdahl: si una fracción `s` del trabajo se mantiene en secuencial,
-#    ningún número de hilos te permite superar un aceleramiento de `1/s`.
+#    ningún número de hilos permite superar una aceleración de `1/s`.
 # 3. **¿Fue útil?** Medir de nuevo, en la misma máquina, de la misma manera.
 #
-# El ejemplo de ejecución es el stencil de stencil de calor-difusión en dos dimensiones
+# El ejemplo de ejecución es el cálculo por vecindad de cálculo por vecindad de calor-difusión en dos dimensiones
 # del cuaderno de preparación. Cada paso reemplaza cada celda interior con el promedio de sus cuatro vecinos.
-# Es pequeño, limitado en memoria, y sigue a los pasos en GPU y sesiones múltiples-particionadas.
+# Es pequeño, limitado en memoria, y sigue los pasos en GPU y sesiones múltiples-particionadas.
 #
 # Este cuaderno es autónomo: ejecutar la celda de configuración después de cada reinicio de tiempo de ejecución.
 
@@ -55,10 +55,10 @@ INFO = runtime_info()
 print(INFO)
 
 # %% [markdown]
-# ## 1.1 El ejemplo de ejecución y su resultado de referencia
+# ## 1.1 Ejemplo de ejecución y su resultado de referencia
 #
-# `init_grid` construye un grid `n x n` con un borde caliente en la parte superior. `step_python` es el
-# stencil escrito de la manera en que un científico lo escribe el primer día. Es el
+# `init_grid` construye una cuadrícula `n x n` con un borde caliente en la parte superior. `step_python` es el
+# cálculo por vecindad escrito de la manera en que un científico lo escribiría el primer día. Es el
 # **referencia**: es más lento, pero permite comprobar cada operación. Todas las
 # versiones optimizadas deben producir el mismo resultado.
 
@@ -88,18 +88,18 @@ print("shape", ref.shape, " top edge", ref[0, :3], " mean interior", ref[1:-1, 1
 assert ref.shape == (N_REF, N_REF) and np.all(ref[0] == 100.0) and np.all(ref[-1] == 0.0)
 
 # %% [markdown]
-# **Checkpoint 1.** La celda superior se ejecutó sin error de afirmación. Mantén `ref` y
-# la `N_REF, ITERS_REF` caso: cada implementación a seguirá siendo comprobada contra él.
+# **Punto de control 1.** La celda superior se ejecutó sin error de afirmación. Mantenga `ref` y
+# el caso `N_REF, ITERS_REF`. Cada implementación seguirá siendo comprobada contra él.
 #
 # ## 1.2 Medir de manera equitativa
 #
-# Una `time.perf_counter()` par da un número. Se lo ejecutas de nuevo y obtienes un
+# Una `time.perf_counter()` devuelve un número. Si se ejecuta de nuevo, obtienes un
 # número diferente: la primera llamada paga por las importaciones, los cachés y (más tarde)
 # la compilación JIT; las llamadas posteriores comparten la máquina con lo que esté
 # corriendo en paralelo. Dos hábitos arreglan la mayoría de eso:
 #
-# - **Calienta** una vez, luego tiempo varias **repeticiones** y mantén el mínimo (la
-#   ejecución con menos interferencia) o el mediano (cuando te importa el tiempo típico).
+# - **Calienta** una vez, luego **repite** varias veces y mantenga el mínimo (la
+#   ejecución con menos interferencia) o la mediana (para representar el tiempo típico).
 # - Compárate implementaciones **dentro de una misma ejecución**, en el **mismo trabajo
 #   de carga y tipo de dato**. Un número de otro ordenador es un experimento diferente.
 
@@ -116,14 +116,15 @@ t_min, t_med = best_of(lambda: run_python(128, 10), repeat=3)
 print(f"pure Python, n=128, 10 steps: min {t_min*1e3:.0f} ms   median {t_med*1e3:.0f} ms")
 
 # %% [markdown]
-# IPython's `%timeit` hace lo mismo. Lee atentamente su salida: reporta el **promedio y la desviación estándar** a lo largo de `-r` ejecuciones, y cada ejecución es el tiempo para `-n` vueltas dividido por `n`. Con `-o` obtienes el objeto y `.best` es la ejecución más rápida.
+# IPython's `%timeit` hace lo mismo. Lea atentamente su salida: informe el **promedio y la desviación estándar** a lo largo de `-r` ejecuciones. Cada ejecución es el tiempo para `-n` vueltas dividido por `n`. Con `-o` obtienes el objeto y `.best` es la ejecución más rápida.
 
 # %%
 # t = %timeit -o -r 3 -n 1 run_python(128, 10)
 print(f"best run {t.best*1e3:.0f} ms; %timeit's headline number is the mean of {t.repeat} runs")
 
 # %% [markdown]
-# **Predicción, ejecución, explicación.** `n=256` tiene cuatro veces más células que `n=128`.
+# Predicción, ejecución, explicación.
+# `n=256` tiene cuatro veces más células que `n=128`.
 #
 # Predicción para la razón de tiempo: **4**.
 #
@@ -137,7 +138,7 @@ print(f"n=128: {t_128*1e3:6.0f} ms   n=256: {t_256*1e3:6.0f} ms   ratio {t_256/t
 # %% [markdown]
 # ### 1.3 ¿Dónde va el tiempo? (demonstración opcional)
 #
-# `line_profiler` muestra el tiempo por línea de una función. Aquí la respuesta es previsible, todo el tiempo está en el cuerpo del bucle interno, pero en código real la línea costosa a menudo es una sorpresa: una `print`, una búsqueda dentro de un bucle, una conversión. Para programas enteros se utiliza `python -m cProfile` o el profiler de muestreo `py-spy`. *Esta celda es la primera que se corta si el sesión termina tarde.*
+# `line_profiler` muestra el tiempo por línea de una función. Aquí la respuesta es previsible, todo el tiempo está en el cuerpo del bucle interno, pero en código real la línea costosa a menudo es una sorpresa: una `print`, una búsqueda dentro de un bucle, una conversión. Para programas enteros se utiliza `python -m cProfile` o el profiler de muestreo `py-spy`. Esta celda es la primera que se corta si la sesión termina tarde.
 
 # %%
 try:
@@ -152,7 +153,7 @@ except Exception as e:
 #
 # El primer y mayor ganador suele no ser la paralelización. Es mover el bucle fuera
 # del intérprete. Cada vista debajo (`u[:-2, 1:-1]` y amigos) es una **vista**:
-# no se copia ningún dato. El cálculo entre ellos es diferente: cada `+` y el
+# no se copia ningún dato. El cálculo entre ellas es diferente: cada `+` y el
 # `0.25 *` asigna un tamaño completo de **array intermedio**, cuatro por paso aquí, y
 # cada uno se escribe y se lee de vuelta a través de la memoria.
 
@@ -175,7 +176,7 @@ t_np, _ = best_of(lambda: run(step_numpy, 128, 10))
 print(f"NumPy n=128, 10 steps: {t_np*1e3:.2f} ms   ({t_128/t_np:.0f}x faster than pure Python, no parallelism yet)")
 
 # %% [markdown]
-# Desde aquí, los cargos de trabajo crecen, porque NumPy termina antes de `n=128` antes de que el reloj pueda resolverse. Los tres lados del cuadrícula utilizados durante toda la sesión en vivo son 128, 512 y 1024, con 20 pasos cada uno.
+# Desde aquí, los trabajos de carga crecen, porque NumPy termina antes de `n=128` antes de que el reloj pueda resolverse. Los tres lados del cuadrícula utilizados durante toda la sesión en vivo son 128, 512 y 1024, con 20 pasos cada uno.
 
 # %%
 SIZES, ITERS = (128, 512, 1024), 20
@@ -186,15 +187,15 @@ for n in SIZES:
     print(f"NumPy n={n:5d}, {ITERS} steps: min {tmin*1e3:8.2f} ms   median {tmed*1e3:8.2f} ms")
 
 # %% [markdown]
-# **Checkpoint 2.** Tienes una base de NumPy para tres tamaños. ¿Qué recurso
+# **Punto de control 2.** Ya se dispone de una base de NumPy para tres tamaños. ¿Qué recurso
 # pensas que limita a la base: las operaciones aritméticas, o la lectura y escritura
-# de los intermediarios a través de la memoria? El apartado 1.5 prueba esa idea.
+# de los intermediarios a través de la memoria? El apartado 1.5 pruebe esa idea.
 #
-# ## 1.5 Numba: compila tu propio bucle
+# ## 1.5 Numba: compila su propio bucle
 #
 # Numba compila el bucle explícito a código máquina. Mantenemos el bucle legible y
 # perdemos los intermediarios: cada celda de salida lee cuatro entradas y escribe una vez.
-# La **primera llamada se compila** (segundo o dos minutos); nunca incluyasla en los tiempos de ejecución.
+# La **primera llamada se compila** (segundo o dos minutos); nunca la incluyas en los tiempos de ejecución.
 
 # %%
 from numba import njit, prange
@@ -218,16 +219,11 @@ for n in SIZES:
     print(f"Numba n={n:5d}: min {tmin*1e3:8.2f} ms   vs NumPy {t_base/tmin:4.1f}x")
 
 # %% [markdown]
-# La relación observada corresponde **a este runtime**. En una máquina con memoria
-# rápida, la diferencia entre NumPy y Numba se reduce; en una máquina más lenta o
-# compartida, aumenta. El mecanismo es el mismo: se realizan menos recorridos por memoria.
+# La relación observada corresponde a este **entorno de ejecución**. En una máquina con memoria rápida, la diferencia entre NumPy y Numba se reduce; en una máquina más lenta o compartida, aumenta. El mecanismo es el mismo: se realizan menos recorridos por memoria.
 #
 # ## 1.6 Hilos con `prange`
 #
-# `prange` distribuye el bucle exterior entre hilos. `os.cpu_count()` informa lo
-# que muestra el sistema operativo, y Numba limita su conjunto de hilos mediante
-# `numba.config.NUMBA_NUM_THREADS`. Un runtime estándar de Colab suele exponer dos
-# CPU lógicas, por lo que conviene consultar el runtime en vez de asumir una cantidad.
+# `prange` distribuye el bucle exterior entre hilos. `os.cpu_count()` informa lo que muestra el sistema operativo, y Numba limita su conjunto de hilos mediante `numba.config.NUMBA_NUM_THREADS`. Un entorno de ejecución estándar de Colab suele exponer dos CPU lógicas, por lo que conviene consultar el entorno de ejecución en vez de asumir una cantidad.
 
 # %%
 @njit(parallel=True)
@@ -245,8 +241,9 @@ THREADS = sorted({1, 2, MAX_THREADS // 2, MAX_THREADS} & set(range(1, MAX_THREAD
 print(f"cpu_count {os.cpu_count()}, Numba pool limit {numba.config.NUMBA_NUM_THREADS} -> thread counts to test: {THREADS}")
 
 # %% [markdown]
-# **Predicción, ejecución, explicación.** Con dos hilos, la ejecución del tiempo disminuirá a la mitad para `n=1024`?
-# Escribe tu predicción antes de ejecutar.
+# Predicción: Con dos hilos, la ejecución del tiempo disminuirá a la mitad para `n=1024`.
+#
+# Escriba su predicción antes de ejecutar.
 
 # %%
 N_SCALE = 1024
@@ -260,10 +257,7 @@ for t in THREADS:
 numba.set_num_threads(MAX_THREADS)
 
 # %% [markdown]
-# Si este runtime tiene solo un núcleo usable, la tabla tiene una fila y no puede mostrar
-# escalado. El siguiente celda carga un **grabado** de recorrido desde el repositorio del curso
-# para que la actividad de interpretación aún funcione. El grabado está etiquetado con el hardware
-# de donde provino; es evidencia sobre *ese* máquina, no sobre esta.
+# Si este entorno de ejecución tiene solo un núcleo usable, la tabla tiene una fila y no puede mostrar escalado. El siguiente celda carga un grabado de recorrido desde el repositorio del curso para que la actividad de interpretación aún funcione. El grabado está etiquetado con el hardware de donde provino; es evidencia sobre esa máquina, no sobre esta.
 
 # %%
 import io, urllib.request
@@ -298,24 +292,24 @@ if len(scaling) >= 2:
     ax.set_xticks(th); ax.legend(); fig.tight_layout()
 
 # %% [markdown]
-# **Leer el plot.** Las curvas de Amdahl son *modelos*: elige la más cercana a los puntos
-# medidos y tienes una estimación del "fracaso secuencial". Para este stencil no queda
+# **Leer el plot.** Las curvas de Amdahl son *modelos*: elija la más cercana a los puntos
+# medidos para obtener una estimación de la "fracción secuencial". En este cálculo por vecindad no queda
 # Python secuencial en el bucle, así que una mala ajuste no es Amdahl en absoluto. Los culpables
 # típicos son:
 #
-# - **Velocidad de banda de memoria.** El stencil hace cuatro lecturas y una escritura por celda y casi
+# - **Velocidad de banda de memoria.** El cálculo por vecindad hace cuatro lecturas y una escritura por celda y casi
 #   ninguna aritmética. Una vez que unas pocas hilos saturan la bus de memoria, más hilos solo esperan.
 # - **Cores compartidos o virtuales.** Dos CPUs lógicos en un host compartido pueden ser un solo
-#   núcleo físico. Entonces dos hilos compiten por un solo unidad y pueden ser más lentos que uno.
-# - **Iniciación de hilos.** Para grids pequeños, despertar la piscina cuesta más que el trabajo.
+#   núcleo físico. Entonces dos hilos compiten por un solo núcleo y pueden ser más lentos que uno.
+# - **Iniciación de hilos.** Para cuadrículas pequeñas, despertar la piscina cuesta más que el trabajo.
 #
-# **Límite de conocimiento del tiempo de ejecución.** Nunca pida más hilos que el tiempo de ejecución te da:
+# **Límite del entorno de ejecución.** No solicite más hilos de los que ofrece el entorno:
 # `numba.set_num_threads(min(wanted, os.cpu_count()))`. La sobrecarga no es un error, solo silencio y lentitud.
 #
-# ## Punto de control 3: tu tabla de tiempos
+# ## Punto de control 3: su tabla de tiempos
 #
-# Guarda la tabla con la descripción del tiempo de ejecución. La compararás con la tabla del GPU
-# en el siguiente cuaderno, y reutilizarás las funciones en el epílogo.
+# Guarde la tabla con la descripción del tiempo de ejecución. La comparará con la tabla del GPU
+# en el siguiente cuaderno, y reutilizará las funciones en el epílogo.
 
 # %%
 save_timings("timings_01_cpu.csv", ["impl", "n", "threads", "min_s", "median_s"], timings)
@@ -330,7 +324,7 @@ for impl, n, thr, tmin, _ in timings:
 # |---|---|
 # | Iterar sobre elementos de un array | Vectorización con NumPy primero, luego `@njit` con Numba |
 # | Mismo bucle, varios núcleos | `parallel=True` y `prange` con Numba, threads <= núcleos |
-# | Tareas independientes independientes en muchos | Procesos (`concurrent.futures`, `joblib`), o Dask; ve el notebook de extensión |
+# | Tareas independientes en muchos | Procesos (`concurrent.futures`, `joblib`), o Dask; ve el notebook de extensión |
 # | Cualquier afirmación de rendimiento | Medir antes y después, mismo tiempo de ejecución, misma carga de trabajo, mismo tipo de datos |
 #
 # **Extensión opcional (no cubierto en vivo):** `ext_gil_and_task_pools`
