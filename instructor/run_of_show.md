@@ -1,157 +1,81 @@
-# Run of show: 180 minutes, Colab edition
+# Run of show: 180 minutos, Colab edición
 
-All students in Colab. Instructor shares a Colab screen on a GPU runtime from
-block 5 onward, and a CPU runtime before that (so the students see the same
-thread counts they will get). Keep `solutions/` and this file open in another
-window. Two planned cuts if the session slips: the profiling demo (block 2,
-5 min) first, then the float32 experiment (block 6, 5 min). Never cut
-correctness checks, the GPU timing/transfer lesson, the capstone or the
-closing discussion. GPU setup stops at its ten-minute boundary; students who
-do not have a GPU by 01:30 use the fallback, no exceptions.
+Todas las personas participantes trabajan en Colab. El instructor comparte una
+pantalla de Colab con un runtime de CPU al inicio y uno con GPU a partir del bloque
+5. Conviene mantener abiertos `solutions/` y este archivo en otra ventana. Si la
+sesión se retrasa, se omiten primero la demostración de perfilado (bloque 2, 5
+minutos) y luego el experimento con float32 (bloque 6, 5 minutos). Se conservan las
+comprobaciones de corrección, la explicación de tiempos y transferencias en GPU, el
+proyecto final y la discusión de cierre. La configuración de GPU termina al cumplir
+los diez minutos; a las 01:30, quienes no tengan GPU continúan con el fallback.
 
-Recording of the GPU demonstration: *(add link after gate 5 in validation.md)*.
+Grabación del demo de GPU: *(añade enlace después de la puerta 5 en validation.md)*.
 
-## 00:00 Welcome and readiness (10 min)
+## 00:00 Bienvenida y preparación (10 minutos)
 
-- 00:00 Outcomes on one slide (the four in the README). "You succeed by
-  producing correct results and explaining your measurements. There is no
-  target speedup."
-- 00:02 Readiness check: everyone opens `01_measure_and_multicore` and runs the
-  setup cell. Hands up when it prints the runtime dictionary. Meanwhile:
-  - **Triage.** Setup fails on pip: ask them to rerun the cell once (transient
-    network); still failing, they pair with a neighbour for this block and
-    retry at the break. Cell hangs at "installing": Runtime > Restart session,
-    rerun. Nothing runs at all: Runtime > Disconnect and delete runtime, reopen
-    the link. Do not debug individuals past 00:08.
-  - Students who did not do the preparation: point them to the one-page recap
-    (`prep/primer.md` section 1 and the "What to remember" cell at the end of
-    `00_stencil_practice`) and the completed stencil in `solutions/`. Do not
-    reteach slicing to the room.
-- 00:06 Recap of the stencil on the slide: hot edge, average of four
-  neighbours, boundaries never change, the pure-Python loop is the reference.
-- 00:08 Run section 1.1 together. Checkpoint 1: the assertion passed.
+- 00:00 Resultados en una diapositiva (los cuatro en el README). "¡Éxito por producir resultados correctos y explicar tus mediciones. No hay un objetivo de aceleración."
+- 00:02 Revisión de preparación: todos abren `01_measure_and_multicore` y ejecutan el celda de configuración. Levantan la mano cuando imprime el diccionario de tiempo. Mientras tanto:
+  - **Triage.** La configuración falla por pip: pídeles que vuelvan a ejecutar la celda una vez (red de red transient); aún fallando, los pares con un compañero para este bloque y vuelven a intentar en el descanso. La celda se detiene en "instalando": Runtime > Reiniciar sesión, volver a ejecutar. Nada corre: Runtime > Desconectar y borrar el entorno, volver a abrir la enlace. No depurar individuos pasado 00:08.
+  - Estudiantes que no realizaron la preparación: señalarles a la una página recapitulativa (`prep/primer.md` sección 1 y la celda "¿Qué recordar" al final de `00_stencil_practice`) y el stencil completado en `solutions/`. No repite la enseñanza de la corteza.
+- 00:06 Recapitulación del stencil en la diapositiva: borde caliente, promedio de cuatro vecinos, bordes nunca cambian, el bucle de Python pura es la referencia.
+- 00:08 Ejecutar juntos el apartado 1.1. Punto de control 1: la afirmación pasó.
 
-## 00:10 Measurement (25 min), notebook 01 sections 1.2 to 1.4
+## 00:10 Medición (25 minutos), secciones 1.2 a 1.4 del notebook 01
 
-- 00:10 Prompt: "Why is one `time.time()` pair not a measurement?" Collect
-  three answers (first call, other processes, resolution). Run `best_of`.
-- 00:14 `%timeit`: point at the words "mean +- std. dev." in the output. Common
-  misconception: that `%timeit` reports the best time. It reports the mean of
-  the runs; `.best` is available if you ask for it.
-- 00:17 Predict-run-explain: n=128 vs n=256 ratio. Expected answer 4x, and the
-  explanation is "time proportional to cells, interpreter overhead per cell".
-  Colab CPU timings for pure Python are 50 to 150 ms at n=128.
-- 00:21 Profiling demo (CUT 1). Show `%lprun` once; say what you would look for
-  in real code. Skip silently if late.
-- 00:26 NumPy: views versus intermediates. Ask: "How many arrays does this line
-  allocate?" Answer: four (three sums and the product); the slices allocate
-  none. Run the baseline table. Checkpoint 2: everyone has three NumPy rows.
-- 00:33 Prompt for section 1.5: "Is NumPy limited by arithmetic or by memory
-  traffic?" Do not answer yet.
+- 00:10 Pregunta: "¿Por qué una `time.time()` no es una medición?" Colectar tres respuestas (llamada inicial, otros procesos, resolución). Ejecutar `best_of`.
+- 00:14 `%timeit`: señalar las palabras "promedio +- desviación estándar" en la salida. Error común: que `%timeit` reporta el mejor tiempo. Reporta el promedio de las ejecuciones; `.best` está disponible si se pide.
+- 00:17 Predicción, ejecución, explicación: ratio de 128 vs 256. Respuesta esperada 4x, y la explicación es "tiempo proporcional a los celdas, overhead del intérprete por celda".
+- Colab CPU tiempos de ejecución para Python pura son 50 a 150 ms a 128.
+- 00:21 Demo de perfilado (CUT 1). Mostrar `%lprun` una vez; decir qué se busca en el código real. Silencio si llega tarde.
+- 00:26 NumPy: vistas versus intermediarios. Preguntar: "¿Cuántas matrices se asignan con esta línea?" Respuesta: cuatro (tres sumas y el producto); las cortesías asignan nada. Ejecutar la tabla de referencia. Punto de control 2: todos tienen tres filas de NumPy.
+- 00:33 Preguntar por la sección 1.5: "¿Es NumPy limitado por aritmética o por tráfico de memoria?" No responder aún.
 
-## 00:35 Numba, threads, Amdahl (35 min), sections 1.5 to 1.7
+## 00:35 Numba, hilos, Amdahl (35 minutos), secciones 1.5 a 1.7
 
-- 00:35 Numba serial. Emphasise the compile-on-first-call line in the output.
-  Misconception: "Numba is faster because it is parallel." It is not parallel
-  here; it is faster because it stops allocating intermediates.
-- 00:42 `prange` and the thread list. Show `MAX_THREADS` on the shared screen:
-  a Colab CPU runtime usually reports 2. Explain why the notebook asks the
-  runtime instead of assuming.
-- 00:46 Predict-run-explain: "Will two threads halve the time?" Typical Colab
-  result: between 1.0x and 1.6x; sometimes slower. Explanations to draw out:
-  shared physical core, memory bandwidth, thread start-up on a small grid.
-- 00:52 Recorded thread sweep if the runtime has one core. Say out loud what
-  machine the recording came from (the notebook prints it).
-- 00:55 Amdahl plot. Exercise: pick the curve closest to the measurement and
-  say what "serial fraction" it implies; then explain why that is a *model*
-  and memory bandwidth is the more likely cause for this stencil.
-- 01:02 Runtime-aware limit: `set_num_threads(min(wanted, cpu_count))`.
-  Over-subscription is silent.
-- 01:05 Checkpoint 3: save the CSV. Ask two students to read one row of their
-  table and their Numba-vs-NumPy ratio. Different numbers, same shape: that is
-  the point.
+- 00:35 Numba serial. Emphasizar la línea de "compilar en la primera llamada" en la salida. Error común: "Numba es más rápido porque es paralelo". No es paralelo aquí; es más rápido porque detiene la asignación de intermediarios.
+- 00:42 `prange` y la lista de hilos. Mostrar `MAX_THREADS` en el lienzo compartido: una CPU Colab runtime usualmente reporta 2. Explicar por qué el cuaderno pregunta al entorno en lugar de asumir.
+- 00:46 Predicción, ejecución, explicación: "¿Dos hilos reducirán el tiempo en la mitad?" Resultado típico de Colab T4: entre 1.0x y 1.6x; a veces más lento. Explicaciones para sacar: núcleo físico compartido, velocidad de memoria, arranque de hilos en un pequeño grid.
+- 00:52 Grabación de la recorrida de hilos si el entorno tiene un núcleo. Decir a voz alta de qué máquina la grabación proviene (el cuaderno imprime).
+- 00:55 Gráfico de Amdahl. Ejercicio: elige la curva más cercana a la medición y dice qué "fracaso serial" implica; luego explica por qué es un modelo y la velocidad de memoria es la causa más probable para este stencil.
+- 01:02 Límite de conciencia del entorno: `set_num_threads(min(wanted, cpu_count))`. Sobrecarga silenciosa.
+- 01:05 Punto de control 3: guardar el CSV. Preguntar a dos estudiantes para leer una fila de su tabla y su ratio Numba-NumPy. Diferentes números, misma forma: es el punto.
 
-## 01:10 Break (10 min)
+## 01:10 Descanso (10 minutos)
 
-Tell everyone to save (Ctrl+S). Students who want to try the GPU switch early
-may, but the block starts at 01:20 regardless.
+Decir a todos que guarden (Ctrl+S). Los estudiantes que quieren probar el GPU pueden hacerlo temprano, pero el bloque comienza a las 13:20 en cualquier caso.
 
-## 01:20 GPU setup (10 min, hard stop), notebook 02 setup cell
+## 01:20 Configuración de GPU (10 minutos, límite de tiempo), celda de configuración del notebook 02
 
-- 01:20 Runtime > Change runtime type > GPU. Run the setup cell. It prints
-  `MODE: GPU` or `MODE: CPU fallback`.
-- Triage: "no GPU available" from Colab: fallback, immediately. CuPy import
-  error on a GPU runtime: rerun once; still failing, fallback. Restart loops:
-  fallback. Do not spend the room's time on one machine.
-- 01:28 Show the CPU-fallback banner on the screen so those students know what
-  they will see: live CPU rows, recorded GPU rows with a hardware label, and
-  the same questions.
-- 01:30 Move on whatever the state of the room.
+- 01:20 Runtime > Cambiar tipo de entorno > GPU. Ejecutar la celda de configuración. Imprime `MODE: GPU` o `MODE: CPU fallback`.
+- Triage: "no GPU disponible" de Colab: fallback, inmediatamente. Error de importación de CuPy en un entorno de GPU: volver a ejecutar una vez; aún fallando, fallback. Reiniciar los bucles: fallback. No gastar el tiempo del entorno en una máquina.
+- 01:28 Mostrar el banner de fallback en pantalla para que los estudiantes sepan qué verán: filas de CPU vivas, filas de GPU grabadas con etiqueta de hardware, y las mismas preguntas.
+- 01:30 Pasar a lo que esté ocurriendo en el entorno.
 
-## 01:30 CuPy, synchronisation, sweep, transfers, precision (40 min), sections 2.1 to 2.6
+## 01:30 CuPy, sincronización, recorrida, transferencias, precisión (40 minutos), secciones 2.1 a 2.6
 
-- 01:30 Section 2.1. The `xp` pattern. Checkpoint 1: same numbers on a
-  different memory.
-- 01:35 Section 2.2. Run the no-sync versus sync cell. Misconception to
-  surface: "the GPU is so fast the time is zero." Ask what the clock contained.
-- 01:41 Section 2.3 predict: "At which n will the GPU overtake the CPU on
-  this runtime?" Run. Explain-what-you-see questions 1 and 2. Do not state a
-  crossover size; ask the room for theirs, then for the fallback table's, and
-  point out they differ.
-- 01:52 Section 2.4 transfers. Predict: upload cheaper or dearer than one
-  step? Typical answer on Colab T4: an upload of 32 MB costs several stencil
-  steps. Show the two scopes side by side. Rule: say which scope you quote.
-- 02:01 Section 2.5 float32 (CUT 2). Point out the check with a looser
-  tolerance, and that the f64/f32 ratio is a property of the resource you are
-  bound by, not of "the GPU".
-- 02:06 Section 2.6 briefly, then Checkpoint 2: save the CSV. Exit question:
-  three things to ask about "40x faster" (synchronised, transfers included,
-  same workload and dtype).
+- 01:30 Sección 2.1. El patrón `xp`. Punto de control 1: los mismos números en una memoria diferente.
+- 01:35 Sección 2.2. Ejecutar la celda de no-sinc versus sinc. Error común a surfear: "el GPU es tan rápido que el tiempo es cero". Preguntar qué contenía el reloj.
+- 01:41 Sección 2.3 predecir: "¿A qué n el GPU superará al CPU en este entorno?" Ejecutar. Preguntas de explicación 1 y 2. No establecer un tamaño de crossover; preguntar al cuarto por su tamaño, luego por el de la tabla de fallback, y señalar que difieren.
+- 01:52 Sección 2.4 transferencias. Predicción: subir más caro o más barato que un paso? Respuesta típica de Colab T4: un subir de 32 MB cuesta varios pasos de corteza. Mostrar los dos escopetas lado a lado. Regla: señalar qué escopeta se cita.
+- 02:01 Sección 2.5 float32 (CUT 2). Puntar el chequeo con una tolerancia más laxa, y que el ratio f64/f32 es una propiedad del recurso al que estás ligado, no de "el GPU".
+- 02:06 Sección 2.6 brevemente, y Punto de control 2: guardar el CSV. Pregunta de salida: tres cosas para preguntar sobre "40x más rápido" (sincronización incluida, mismo trabajo y tipo de datos).
 
-## 02:10 Beyond one machine (20 min), notebook 03
+## 02:10 Más allá de una máquina (20 minutos), notebook 03
 
-- 02:10 One slide: separate machines, separate memory. The two programming
-  models.
-- 02:13 Section 3.2 exercise before running: rows per boundary per step, and
-  bytes. Answer: two rows per interior boundary, `2*(P-1)*n*8` bytes in total,
-  `2n*8` per worker in the middle. Run; the reconstructed result is
-  `array_equal`, not just close.
-- 02:19 Section 3.3 model plot and the latency question. Expected answer: at
-  n=256, P=128 a worker computes 512 cells (about 0.5 us) and waits for two
-  messages (about 20 us of latency): mostly waiting. At n=16384 it computes
-  2 million cells (2 ms) per two messages: mostly computing.
-- 02:24 Sections 3.4 and 3.5 as reading with the code on screen: match each
-  `Sendrecv` line with a line of `exchange_halos`; then the sweep with no
-  halos at all. State plainly that this notebook makes no multi-node
-  performance claim.
-- 02:28 Checkpoint: one sentence per capstone workload, which table row.
+- 02:10 Una diapositiva: máquinas separadas, memorias separadas. Los dos modelos de programación.
+- 02:13 Sección 3.2 ejercicio antes de ejecutar: filas por borde por paso, y bytes. Respuesta: dos filas por borde interno, `2*(P-1)*n*8` bytes en total, `2n*8` por hilo en el medio. Ejecutar; el resultado reconstruido es `array_equal`, no solo cercano.
+- 02:19 Sección 3.3 modelo y la pregunta de latencia. Respuesta esperada: a n=256, P=128 un hilo computa 512 celdas (cerca de 0.5 us) y espera por dos mensajes (cerca de 20 us de latencia): principalmente esperando. A n=16384 computa 2 millones de celdas (2 ms) por dos mensajes: principalmente computando.
+- 02:24 Secciones 3.4 y 3.5 como lectura con el código en pantalla: unir cada línea de `Sendrecv` con una línea de `exchange_halos`; luego la recorrida sin halos. Establecer claramente que este cuaderno no hace ninguna afirmación de rendimiento multi-nodo.
+- 02:28 Punto de control: una frase por cada carga de trabajo capstone, que fila de la tabla.
 
-## 02:30 Capstone (20 min), notebook 04
+## 02:30 Capstone (20 minutos), notebook 04
 
-- 02:30 Two workloads, three deliverables each. Students edit `CHOICE_A` and
-  `CHOICE_B`, run, then write the recommendation cell. Circulate.
-- Expected results and reasoning: `solutions/capstone_solution.md`. The
-  teachable surprise is workload A, where `numba_par` is often slower than
-  `numba`.
-- 02:45 Two volunteers read their recommendation. Ask each: "Which number in
-  your table is that sentence based on?"
-- 02:48 Save the CSV and the notebook.
+- 02:30 Dos cargas de trabajo, tres entregables cada. Los estudiantes editan `CHOICE_A` y `CHOICE_B`, ejecutan, y escriben la celda de recomendación. Circulan.
+- Resultados esperados y razonamiento: `solutions/capstone_solution.md`. La sorpresa enseñable es la carga de trabajo A, donde `numba_par` a menudo es más lento que `numba`.
+- 02:45 Dos voluntarios leen su recomendación. Preguntar a cada uno: "¿Qué número en tu tabla es la base de esta oración?"
+- 02:48 Guardar el CSV y el cuaderno.
 
-## 02:50 Debrief (10 min)
+## 02:50 Revisión (10 minutos)
 
-- Exit question: "When would more hardware fail to help?" Collect: small
-  workload (launch/thread overhead), transfers inside a loop, memory-bound
-  kernel, serial fraction, communication-bound decomposition.
-- The decision table slide. Where to go next: the extensions, the reading
-  guide, the slides link.
-
-## Misconceptions to listen for, all session
-
-| Heard | Correct |
-|---|---|
-| "`%timeit` gives the best time" | Mean and std over runs; `.best` on request |
-| "Numba is faster because it is parallel" | Serial Numba wins by removing intermediates |
-| "Processes always beat threads" | Depends on whether the code holds the GIL and on task size |
-| "The GPU is Nx faster" | Only with sync, stated scope, same workload and dtype, this runtime |
-| "float32 is twice as fast on GPUs" | For a memory-bound kernel it is about bytes; compute-bound depends on the card |
-| "Bigger cluster, faster program" | Communication-to-compute ratio `2P/n` grows with P |
+- Pregunta de salida: "¿Cuándo más hardware no ayudaría?" Colectar: carga de trabajo pequeña (lancamiento/hilo overhead), transferencias dentro de un bucle, kernel limitado por memoria, fracaso serial, descomposición comunicacional.
+- La diapositiva de la tabla de decisiones. A dónde ir después: las extensiones, la guía de lectura, el enlace a las diapositivas.

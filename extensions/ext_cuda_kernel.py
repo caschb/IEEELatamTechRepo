@@ -1,16 +1,16 @@
 # %% [markdown]
-# # Extension B: write the GPU kernel yourself with numba.cuda (optional)
+# # Extensión B: escribe tu propio kernel con numba.cuda (opcional)
 #
-# **Requires a GPU runtime.** CuPy hides the kernel. Sometimes you need your
-# own: an operation that is not a composition of array ops, or one where CuPy's
-# intermediates (four per stencil step) cost too much. The mental model: one
-# Python function runs once per **thread**, and each thread asks "which element
-# am I?"
+# **Requiere un entorno de ejecución con GPU.** CuPy oculta el kernel. A veces
+# es necesario tu propio: una operación que no es una composición de operaciones
+# de array, o una donde los intermediarios de CuPy (cuatro por paso de stencil)
+# cuestan demasiado. El modelo mental: una función de Python se ejecuta una vez
+# por **hilo**, y cada hilo pregunta "¿Qué elemento soy?".
 #
-# *Status: optional extension. Numba's CUDA target moved to the separate
-# `numba-cuda` package; this notebook installs it if needed. Colab compatibility
-# of that package must be checked separately before recommending this notebook
-# to students.*
+# *Estado: extensión opcional. El objetivo de Numba CUDA se movió a la
+# separada paquete `numba-cuda`; este cuaderno instala el paquete si es necesario.
+# La compatibilidad de ese paquete con Colab debe ser comprobada separadamente
+# antes de recomendar este cuaderno a los estudiantes.*
 
 # %%
 import importlib, importlib.util, subprocess, sys, time
@@ -74,7 +74,4 @@ for n in (512, 1024, 2048):
         print(f"n={n:5d} {dtype.__name__}: CuPy {t_cupy*1e3:7.2f} ms   numba.cuda kernel {t_kern*1e3:7.2f} ms")
 
 # %% [markdown]
-# The hand-written kernel reads each input once and writes once; CuPy's version
-# materialises intermediates. Whether that shows up depends on the size and the
-# card: check the ratio you measured rather than assuming. The same NumPy-vs-Numba
-# story from the CPU session, one level down.
+# La kernel en mano lee cada entrada una vez y escribe una vez; la versión de CuPy materializa los intermedios. Dependiendo de la tamaño y el cartón: revisa la relación que midiste, en lugar de asumir. La misma historia de NumPy vs. Numba desde la sesión de CPU, un nivel más abajo.

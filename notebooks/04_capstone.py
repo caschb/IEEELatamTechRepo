@@ -1,19 +1,15 @@
 # %% [markdown]
-# # 4. Capstone: choose and justify an implementation
+# # 4. Capstone: elige y justifica una implementación
 #
-# **Live session, block 8 (02:30 to 02:50).** Works on a CPU runtime; the GPU
-# rows appear only if a GPU is available. Self-contained: all functions from
-# notebooks 1 and 2 are defined again below.
+# **Sesión en vivo, bloque 8 (02:30 a 02:50).** Trabaja en un entorno de ejecución CPU; las filas de GPU aparecen solo si está disponible. Autocontenidos: se definen de nuevo todas las funciones de los notebooks 1 y 2.
 #
-# You have two workloads. For **each one**, produce three things:
+# Tienes dos cargas de trabajo. Para **cada una**, produce tres cosas:
 #
-# 1. a correctness check against the reference,
-# 2. a timing table on this runtime, with the runtime described,
-# 3. a two-sentence recommendation in the final markdown cell, tied to *your*
-#    numbers, not to the slides.
+# 1. un chequeo de correctitud contra la referencia,
+# 2. una tabla de tiempos en este entorno de ejecución, con la descripción del entorno de ejecución,
+# 3. dos frases de recomendación en la última celda de markdown, ligadas a tus números, no a las diapositivas.
 #
-# There is no target speedup. You succeed by producing correct results and
-# explaining what you measured.
+# No hay objetivo de aceleración. Has logrado si produciste resultados correctos y explicas lo que midiste.
 
 # %%
 # --- Setup: rerun after every runtime restart ------------------------------
@@ -61,7 +57,7 @@ sync = cp.cuda.Device().synchronize if HAVE_GPU else (lambda: None)
 print(runtime_info(), "\nGPU rows:", "live" if HAVE_GPU else "skipped (no GPU on this runtime)")
 
 # %% [markdown]
-# ## The toolbox (from notebooks 1 and 2)
+# ## El toolbox (desde los notebooks 1 y 2)
 
 # %%
 def init_grid(n, xp=np, dtype=np.float64, top=100.0):
@@ -105,15 +101,11 @@ for name, (step, xp) in CANDIDATES.items():       # warm up / compile everything
 print("candidates:", list(CANDIDATES))
 
 # %% [markdown]
-# ## Workload A (CPU): many small independent simulations
+# ## Workload A (CPU): muchas simulaciones pequeñas e independientes
 #
-# 48 grids of side 128, 30 steps each, each with a different top-edge
-# temperature. Nothing is shared between grids. The reference is NumPy.
+# 48 grids de lado 128, 30 pasos cada uno, cada uno con una temperatura de borde superior diferente. Nothing es compartido entre los grids. El referente es NumPy.
 #
-# **Decide:** which candidate, and why? Consider that the grids are small, and
-# that `numba_par` spends its threads *inside* one grid. Fill in `CHOICE_A`, then
-# run the cells. You may add a candidate of your own to `CANDIDATES` (for
-# example, a plain loop over grids inside one `@njit(parallel=True)` function).
+# **Decide:** cual candidato, y por qué? Considera que los grids son pequeños, y que `numba_par` gasta sus hilos *dentro* de uno solo de los grids. Llena en `CHOICE_A`, luego ejecuta las celdas. Puedes añadir un candidato propio a `CANDIDATES` (por ejemplo, un bucle plano sobre los grids dentro de una función `@njit(parallel=True)`).
 
 # %%
 TEMPS = np.linspace(50, 150, 48)
@@ -132,15 +124,11 @@ for name in ["numpy", "numba", "numba_par"]:            # <- CHOICE_A: edit this
     print(f"workload A  {name:10s} {t*1e3:9.1f} ms  (correct)")
 
 # %% [markdown]
-# ## Workload B: one large coupled simulation
+# ## Trabajo de carga B: una gran simulación unificada
 #
-# One grid of side 2048, 40 steps. On a GPU runtime the CuPy candidate is timed
-# both **compute-only** and **transfer-inclusive** (upload once, compute, download
-# once). Without a GPU, compare the CPU candidates and use the recorded GPU
-# table from notebook 2 for the discussion.
+# Una cuadrícula de lado 2048, 40 pasos. En un entorno de ejecución con GPU, el candidato de CuPy se mide tanto **solo de cálculo** como **inclusivo de transferencia** (subida una vez, cálculo, bajada una vez). Sin GPU, compara los candidatos de CPU y utiliza la tabla de GPU registrada en el cuaderno 2 para la discusión.
 #
-# **Decide:** which candidate for this workload, and does the answer change if
-# the result must come back to the CPU after every 40 steps?
+# **Decide:** qué candidato para este trabajo de carga, y si el resultado debe regresar al CPU después de cada 40 pasos, ¿cambia la respuesta?
 
 # %%
 N_B, ITERS_B = 2048, 40
@@ -169,17 +157,13 @@ if HAVE_GPU:
 save_timings("timings_04_capstone.csv", ["workload", "impl", "n", "iters", "tasks", "min_s"], timings_A + timings_B)
 
 # %% [markdown]
-# ## Your recommendation (edit this cell)
+# ## Recomendación (edite esta celda)
 #
 # **Runtime:** *(paste the runtime description printed by the setup cell)*
 #
-# **Workload A (48 small independent grids):** I would use ... because on this
-# runtime it took ... versus ... . Threads inside one small grid did / did not
-# help because ... . If I had a cluster, this workload would map onto ... (task
-# scheduler / message passing) because the grids exchange ... bytes.
+# **Carga de Trabajo A (48 pequeños grids independientes):** Usaría ... porque en este
+# runtime tomó ... versus ... . Los hilos dentro de un solo pequeño grid ayudaron / no ayudaron porque ... . Si tuviera un cluster, esta carga de trabajo se asignaría a ... (manejador de tareas / comunicación por mensajería) porque los grids intercambian ... bytes.
 #
-# **Workload B (one 2048x2048 grid):** I would use ... because ... . The
-# transfer-inclusive time was ... of the compute-only time, so moving the result
-# back every 40 steps would / would not change the decision.
+# **Carga de Trabajo B (un grid de 2048x2048):** Usaría ... porque ... . El tiempo de transferencia incluida fue ... del tiempo de cálculo solo, por lo que mover el resultado de vuelta cada 40 pasos cambiaría / no cambiaría la decisión.
 #
-# **One thing more hardware would not fix:** ...
+# **Una cosa más que el hardware no arreglaría:** ...

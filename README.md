@@ -1,79 +1,77 @@
-# Modern Parallel Programming in Python for HPC and AI
+# Programación paralela moderna en Python para HPC e IA
 
-A three-hour, hands-on workshop on measuring and speeding up Python code on
-multicore CPUs and GPUs, and on what changes when work spans several machines
-(topics 3, 5, 7, 8 and 9 of the IEEE Latam workshop). **Everything runs in
-Google Colab.** No cluster account, no SSH, no local installation.
+Taller práctico de tres horas sobre cómo medir y acelerar código Python en CPU
+multinúcleo y GPU, y sobre los cambios necesarios cuando el trabajo abarca varias
+máquinas (temas 3, 5, 7, 8 y 9 del taller IEEE Latam). **Todo se ejecuta en
+Google Colab.** No se requieren una cuenta de clúster, SSH ni instalación local.
 
-## 1. Before the event: preparation (45 to 60 minutes, CPU runtime)
+## 1. Antes del evento: preparación (45 a 60 minutos, tiempo de ejecución en CPU)
 
-Do this at least two days before the workshop, on a normal computer with a
-browser and a Google account. Start with [`prep/README.md`](prep/README.md);
-it links everything below in order.
+Se recomienda completar esta preparación al menos dos días antes del taller, en
+una computadora con navegador y una cuenta de Google. El punto de partida es
+[`prep/README.md`](prep/README.md), que enlaza los materiales en orden.
 
-| Step | Time | Open |
+| Paso | Tiempo | Abrir |
 |---|---:|---|
-| Read the primer | 15 min | [`prep/primer.md`](prep/primer.md) |
-| Is my Colab ready? | 10-15 min | [Open in Colab](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_colab_ready.ipynb) |
-| The running example | 10-15 min | [Open in Colab](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) |
-| Self-check | 5-10 min | [`prep/self_check.md`](prep/self_check.md) |
+| Leer el material introductorio | 15 min | [`prep/primer.md`](prep/primer.md) |
+| ¿Está mi Colab listo? | 10-15 min | [Abrir en Colab](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_colab_ready.ipynb) |
+| El ejemplo de práctica | 10-15 min | [Abrir en Colab](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) |
+| Autocomprobación | 5-10 min | [`prep/self_check.md`](prep/self_check.md) |
 
-A completed **CPU** readiness check is all that is required. You do not need a
-GPU before the event. If Python or NumPy feel unfamiliar, the optional
-[refresher](prep/python_numpy_refresher.md) comes before the primer.
+Solo se requiere completar la verificación de **CPU**. No es necesario disponer
+de una GPU antes del evento. Si se necesita repasar Python o NumPy, conviene
+consultar primero el [repaso opcional](prep/python_numpy_refresher.md).
 
-## 2. Live agenda (180 minutes)
+## 2. Agenda en vivo (180 minutos)
 
-| Time | Min | Block | Notebook |
+| Tiempo | Min | Bloque | Notebook |
 |---|---:|---|---|
-| 00:00 | 10 | Welcome, outcomes, readiness check, recap of the stencil | [`00_stencil_practice`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) (recap only) |
-| 00:10 | 25 | Measurement: repeated timings, warm-up, profiling demo, NumPy baseline | [`01_measure_and_multicore`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/01_measure_and_multicore.ipynb) |
-| 00:35 | 35 | Numba, `prange`, thread comparison, Amdahl | same notebook |
-| 01:10 | 10 | Break (save your work) | |
-| 01:20 | 10 | Switch to a GPU runtime, setup, device check | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
-| 01:30 | 40 | CuPy stencil, synchronisation, size sweep, transfers, precision | same notebook |
-| 02:10 | 20 | Beyond one machine: partitions, halos, communication, MPI and Dask roles | [`03_parallel_models`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/03_parallel_models.ipynb) |
-| 02:30 | 20 | Capstone: choose and justify an implementation | [`04_capstone`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/04_capstone.ipynb) |
-| 02:50 | 10 | Debrief, questions, next steps | |
+| 00:00 | 10 | Bienvenida, objetivos, chequeo de preparación, recapitulación del stencil | [`00_stencil_practice`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) (solo recapitulación) |
+| 00:10 | 25 | Medición: tiempos repetidos, calentamiento, demostración de perfilado, base de NumPy | [`01_measure_and_multicore`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/01_measure_and_multicore.ipynb) |
+| 00:35 | 35 | Numba, `prange`, comparación de hilos, Amdahl | mismo notebook |
+| 01:10 | 10 | Descanso (guardar el trabajo) | |
+| 01:20 | 10 | Cambio a un runtime de GPU, configuración, verificación del dispositivo | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
+| 01:30 | 40 | Stencil con CuPy, sincronización, barrido de tamaños, transferencias, precisión | mismo notebook |
+| 02:10 | 20 | Más allá de una máquina: particiones, halos, comunicación, roles de MPI y Dask | [`03_parallel_models`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/03_parallel_models.ipynb) |
+| 02:30 | 20 | Proyecto final: elegir y justificar una implementación | [`04_capstone`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/04_capstone.ipynb) |
+| 02:50 | 10 | Revisión, preguntas, pasos siguientes | |
 
-Every notebook is self-contained: its first code cell installs what is missing
-and must be rerun after any runtime restart. Timings are compared **within one
-runtime**; a number from another machine is a different experiment.
+Cada notebook es autónomo: su primera celda de código instala lo que falta y debe
+ejecutarse de nuevo después de reiniciar el runtime. Los tiempos se comparan
+**dentro de un mismo runtime**; un valor de otra máquina corresponde a otro experimento.
 
-**No GPU?** Stay on the CPU runtime. Notebook 02 detects that, runs the CPU
-cells live, and shows a recorded GPU table (labelled with the hardware it came
-from) so you can do the same comparisons. The instructor also has a screen
-recording of the GPU demonstration.
+**¿No hay GPU disponible?** Se puede continuar en el runtime de CPU. El notebook
+02 lo detecta, ejecuta las celdas de CPU y muestra una tabla registrada en GPU,
+identificada con el hardware correspondiente. También hay una grabación de la
+demostración en GPU.
 
-## 3. After the event
+## 3. Después del evento
 
-- Slides: [`instructor/slides.md`](instructor/slides.md)
-- Optional extensions (not covered live, run at your own pace):
-  [threads, processes and the GIL](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_gil_and_task_pools.ipynb)
-  and, on a GPU runtime, [write your own CUDA kernel](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_cuda_kernel.ipynb)
-- Reading guide for MPI and Dask beyond one machine: [`instructor/reading_guide_mpi_dask.md`](instructor/reading_guide_mpi_dask.md)
-- Solutions: [`solutions/`](solutions/)
+- Diapositivas: [`instructor/slides.md`](instructor/slides.md)
+- Extensiones opcionales (no se cubren en vivo):
+  [hilos, procesos y el GIL](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_gil_and_task_pools.ipynb) y, en un runtime de GPU, [escribir un kernel CUDA](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_cuda_kernel.ipynb)
+- Guía de lectura para MPI y Dask más allá de una máquina: [`instructor/reading_guide_mpi_dask.md`](instructor/reading_guide_mpi_dask.md)
+- Soluciones: [`solutions/`](solutions/)
 
-## Prerequisites
+## Requisitos previos
 
-Basic Python (functions, loops, lists), a Google account, and a browser.
-Everything else is installed by the notebooks.
+Python básico (funciones, bucles, listas), una cuenta de Google y un navegador. Todo lo demás se instala por los notebooks.
 
-## For instructors and authors
+## Para instructores y autores
 
-| Path | What |
+| Ruta | Qué |
 |---|---|
-| `instructor/run_of_show.md` | Minute marks, prompts, misconceptions, exercise answers, setup triage, the two cuts |
-| `instructor/validation.md` | Release gates and the manual Colab checks that the script cannot do |
-| `notebooks/*.py` | Notebook sources in Jupytext percent format; the `.ipynb` files are generated from them |
-| `tools/validate.sh` | Regenerates every notebook and executes the core ones headless in CPU-fallback and GPU mode |
-| `env/` | Authoring environment (`uv`) and the minimal Colab package list |
-| `data/reference_timings/` | Recorded timing tables with runtime metadata, used by the CPU fallback |
-| `archive/kabre/` | The earlier cluster edition (SLURM, MPI, OnDemand); historical, not maintained |
+| `instructor/run_of_show.md` | Marcas de tiempo, preguntas, errores frecuentes, respuestas, triaje de configuración y dos recortes previstos |
+| `instructor/validation.md` | Criterios de publicación y verificaciones manuales de Colab que el script no realiza |
+| `notebooks/*.py` | Fuentes de los notebooks en formato porcentual de Jupytext; a partir de ellas se generan los archivos `.ipynb` |
+| `tools/validate.sh` | Regenera cada notebook y ejecuta los principales en modo fallback de CPU y en modo GPU |
+| `env/` | Entorno de autoría (`uv`) y lista mínima de paquetes para Colab |
+| `data/reference_timings/` | Tablas de tiempos registradas con metadatos del runtime, utilizadas por el fallback de CPU |
+| `archive/kabre/` | Edición anterior para clúster (SLURM, MPI, OnDemand); es histórica y no recibe mantenimiento |
 
-Authoring loop:
+Ciclo de autoría:
 
 ```bash
-uv sync --project env            # add --extra gpu on a machine with an NVIDIA GPU
-GPU_EXTRA=1 tools/validate.sh    # regenerate .ipynb from .py and execute the core notebooks
+uv sync --project env            # agregar --extra gpu en una máquina con GPU NVIDIA
+GPU_EXTRA=1 tools/validate.sh    # regenerar los .ipynb desde .py y ejecutar los notebooks principales
 ```

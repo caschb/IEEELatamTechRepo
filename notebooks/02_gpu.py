@@ -1,21 +1,16 @@
 # %% [markdown]
-# # 2. GPU computing from Python
+# # 2. Computación con GPU desde Python
 #
-# **Live session, blocks 5 and 6 (01:20 to 02:10).** Switch to a GPU runtime
-# first: *Runtime > Change runtime type > T4 GPU* (or whatever GPU Colab offers),
-# then run the setup cell. If no GPU is available, **stay on the CPU runtime and
-# keep going**: the notebook detects that, skips the device cells, and shows a
-# recorded GPU table so you can do the same comparisons.
+# **Sesión en vivo, bloques 5 y 6 (01:20 a 02:10).** Cambia a un entorno de ejecución con GPU primero: *Entorno de ejecución > Tipo de entorno de ejecución > T4 GPU* (o lo que ofrezca Colab con GPU),
+# luego ejecuta la celda de configuración. Si no hay GPU disponible, **quédese en el entorno de ejecución con CPU y continúe**: el cuaderno detecta que no hay GPU, omite las celdas de dispositivo y muestra una tabla de GPU grabada para que pueda hacer las mismas comparaciones.
 #
-# A GPU is thousands of slow cores sharing very fast memory. It wins when you
-# have millions of identical, independent operations, and loses when you talk to
-# it too often or move data back and forth. From Python:
+# Un GPU tiene miles de núcleos lentos compartiendo memoria muy rápida. Gana cuando tienes millones de operaciones idénticas e independientes, y pierde cuando se habla con él demasiadas veces o se mueve datos de un lado a otro. Desde Python:
 #
-# - **CuPy**: NumPy's API, arrays live on the GPU. Zero new concepts. (This notebook.)
-# - **numba.cuda**: write the kernel yourself. One new concept, the thread grid.
-#   (Optional extension `extensions/ext_cuda_kernel`.)
+# - **CuPy**: API de NumPy, los arreglos viven en el GPU. No hay nuevos conceptos. (Este cuaderno.)
+# - **numba.cuda**: escribes el kernel tú mismo. Un nuevo concepto, el grid de hilos.
+#   (Extensión opcional `extensions/ext_cuda_kernel`.)
 #
-# Same stencil as notebook 1. This notebook is self-contained.
+# El stencil es el mismo que en el cuaderno 1. Este cuaderno es autónomo.
 
 # %%
 # --- Setup: rerun after every runtime restart ------------------------------
@@ -73,11 +68,11 @@ else:
           " and are labelled as such. CPU cells still run live here.")
 
 # %% [markdown]
-# ## 2.1 CuPy: the drop-in
+# ## 2.1 CuPy: el sustituto sin cambios
 #
-# Write the function once against an *array module* `xp`, then hand it NumPy or
-# CuPy arrays. This is the standard pattern (the Array API) and it is how SciPy,
-# scikit-learn and xarray grow GPU support without rewriting.
+# Escribe la función una vez contra un *módulo de arrays* `xp`, luego házselo pasar a arrays de NumPy o
+# a arrays de CuPy. Este es el patrón estándar (el Array API) y es cómo SciPy,
+# scikit-learn y xarray obtienen soporte para GPU sin tener que escribir código nuevo.
 
 # %%
 def step(u, unew):
@@ -115,15 +110,13 @@ else:
     check(u_cpu, u_cpu, np.float64); print("CPU fallback: correctness check exercised on NumPy only")
 
 # %% [markdown]
-# **Checkpoint 1.** The same `step` function ran on a different kind of memory
-# and produced the same numbers. Nothing about the algorithm changed.
+# **Checkpoint 1.** El mismo función `step` se ejecutó en un tipo diferente de memoria
+# y produjo los mismos números. Nada del algoritmo cambió.
 #
-# ## 2.2 Timing GPU code correctly
+# ## 2.2 Tiempo correcto del código GPU
 #
-# GPU calls are **asynchronous**: `step()` returns before the GPU has finished.
-# Without a `synchronize()` before you stop the clock you time the *launch*, not
-# the work. Synchronise before starting and before stopping. This is the single
-# most common measurement mistake on GPUs.
+# Las llamadas `GPU` son asincrónicas: `step()` retorna antes de que el GPU haya terminado.
+# Sin una `synchronize()` antes de que parar el cronómetro, estás midiendo el *lancet*, no el trabajo. Sincroniza antes de empezar y antes de parar. Esta es la medida más común de error en GPUs.
 
 # %%
 def best_of(fn, repeat=5, sync=lambda: None):
@@ -151,15 +144,15 @@ else:
     print("CPU fallback: no asynchronous device to synchronise. The recorded table below has the GPU numbers.")
 
 # %% [markdown]
-# The "without sync" figure can even be *smaller* than the time of a single
-# memory copy: the CPU queued the work and walked away. Every GPU timing in the
-# rest of this notebook goes through `best_of(..., sync=sync)`.
+# La figura "sin sincronización" puede incluso ser *menor* que el tiempo de una sola
+# copia de memoria: el CPU ordenó el trabajo y se fue. Cada timing del GPU en el resto de
+# esta notebook pasa por `best_of(..., sync=sync)`.
 #
-# ## 2.3 When is the GPU worth it? Like-for-like size sweep
+# ## 2.3 ¿Cuándo vale la pena el GPU? Revisión de tamaño por igual
 #
-# Same workload, same dtype, same number of steps, timed the same way, on the CPU
-# and on the GPU. **Predict** before running: at which grid side, if any, will the
-# GPU overtake the CPU on this runtime?
+# El mismo trabajo, el mismo tipo de dato, el mismo número de pasos, medidos de la misma
+# forma, en CPU y en GPU. **Predice** antes de ejecutar: en qué lado de la rejilla, si es que
+# algún, el GPU superará al CPU en este tiempo de ejecución?
 
 # %%
 SIZES, ITERS = (128, 512, 1024, 2048), 20
@@ -208,25 +201,24 @@ ax.set(xlabel="grid side n", ylabel=f"time for {ITERS} steps [ms]", xscale="log"
 ax.set_xticks(SIZES); ax.set_xticklabels(SIZES); ax.legend(fontsize=8); fig.tight_layout()
 
 # %% [markdown]
-# **Explain what you see.** Two questions to answer from *your* table (or the
-# recorded one, if you are in CPU mode):
+# **Explain what you see.**
 #
-# 1. For the smallest grids, does the GPU time change much with `n`? Each step
-#    launches a handful of kernels, and a launch costs microseconds regardless of
-#    the work. Below some size the GPU is mostly idle and can lose to NumPy.
-# 2. Where, if anywhere, do the two curves cross? That crossover depends on the
-#    CPU, the GPU and what else shares them. Do not memorise a number; memorise
-#    the shape.
+# 1. ¿Se mueve mucho el tiempo del GPU con `n` para los grids más pequeños? Cada
+#    paso lanza una cantidad limitada de hilos, y un lanzamiento cuesta microsegundos
+#    independientemente del trabajo. A partir de cierto tamaño, el GPU está
+#    principalmente inactivo y puede perderle a NumPy.
+# 2. ¿Dónde, si acaso, se cruzan las dos curvas? La cruzada depende del CPU, del
+#    GPU y de lo que comparte con ellos. No memoriza un número; memoriza la forma.
 #
-# ## 2.4 The transfer tax: compute-only versus transfer-inclusive
+# ## 2.4 El impuesto a la transferencia: solo computación versus incluyente de transferencia
 #
-# GPU memory moves hundreds of GB/s; the PCIe link between host and device moves
-# tens. A workload that copies an array up, does a little work, and copies it
-# back can spend most of its time on the copies. Report the two scopes
-# separately, and say which one you mean.
+# La memoria del GPU se mueve cientos de GB/s; la conexión PCIe entre el host y el
+# dispositivo se mueve decenas. Un trabajo que copia un array hacia arriba, hace un
+# poco de trabajo y lo copia de vuelta puede pasar la mayor parte de su tiempo en las
+# copias. Reporta las dos escopetas separadamente y di qué una quieres que signifique.
 #
-# **Predict:** for `n=2048` (32 MB in float64), is one upload cheaper or more
-# expensive than one stencil step on the device?
+# **Predicción:** para `n=2048` (32 MB en float64), ¿es una transferencia más barata o más
+# costosa que un paso de stencil en el dispositivo?
 
 # %%
 n = 2048
@@ -266,18 +258,12 @@ else:
             print(f"[recorded] GPU {r['scope']:18s} {float(r['min_s'])*1e3:8.2f} ms")
 
 # %% [markdown]
-# **Rule:** move data to the GPU once, do all the work there, move results back
-# once. Code that does `cp.asarray()` inside a loop is usually slower than NumPy.
-# When you quote a GPU speedup, say whether the transfers are inside the clock.
+# **Rule:** mueve los datos a la GPU una vez, realiza todo el trabajo ahí, mueve los resultados de vuelta una vez. El código que hace `cp.asarray()` dentro de un bucle suele ser más lento que NumPy.
+# Cuando hables de un aceleramiento del GPU, menciona si las transferencias están dentro del reloj.
 #
-# ## 2.5 Precision: float32 (optional, second cut if the session runs late)
+# ## 2.5 Precisión: float32 (opcional, segunda versión si la sesión se retrasa)
 #
-# `float32` halves the bytes per cell. For a **memory-bound** kernel like this one
-# that can approach a 2x change on either device; the arithmetic rate is not the
-# limit. Cards differ enormously in how fast they do `float64` arithmetic, so a
-# **compute-bound** kernel can show a much larger gap on one GPU and almost none
-# on another. Two lessons: know which resource you are bound by, and check your
-# result still agrees within a tolerance that suits the dtype.
+# `float32` reduce los bytes por celda en la mitad. Para un **kernel que consume memoria** como este, puede acercarse a un cambio del 2x en ambos dispositivos; la tasa de cálculo no es el límite. Las tarjetas difieren enormemente en cómo rápido hacen cálculos de `float64`, por lo que un **kernel que consume cálculo** puede mostrar una gran brecha en uno de los GPUs y casi ninguna en otro. Dos lecciones: conoce qué recurso estás limitado por, y verifica que tu resultado aún concuerda dentro de un tolerancia que se ajuste al dtype.
 
 # %%
 n = 1024
@@ -293,22 +279,16 @@ if HAVE_GPU:
     print(f"GPU n={n}: f64 {tg64*1e3:8.2f} ms   f32 {tg32[0]*1e3:8.2f} ms   f64/f32 {tg64/tg32[0]:.2f}x")
 
 # %% [markdown]
-# ## 2.6 Things that bite
+# ## 2.6 Cosas que morden
 #
-# - **Memory pool.** CuPy caches freed blocks. `cp.get_default_memory_pool().used_bytes()`
-#   is what your arrays occupy; `nvidia-smi` shows the pool, not your data.
-# - **Shared hardware.** Colab GPUs are shared and time-limited; a T4 today may be
-#   another card tomorrow. Always record which device produced a number.
-# - **Reductions to Python scalars** (`float(x.sum())`, `if x.max() > 1:`) force a
-#   synchronisation and a transfer. Keep control flow on the device when you can.
-# - **Random numbers.** `cp.random` generates on the device; do not generate on the
-#   CPU and copy.
+# - **Pool de memoria.** CuPy guarda bloques liberados. `cp.get_default_memory_pool().used_bytes()` es lo que ocupa tus arrays; `nvidia-smi` muestra el pool, no tu data.
+# - **Hardware compartido.** Los GPUs de Colab están compartidos y tienen tiempo límite; un T4 hoy puede ser otra tarjeta mañana. Al siempre anotar el dispositivo que produjo un número.
+# - **Reducción a escalares Python** (`float(x.sum())`, `if x.max() > 1:`) forzará una sincronización y una transferencia. Mantén el flujo de control en el dispositivo cuando puedas.
+# - **Números aleatorios.** `cp.random` genera en el dispositivo; no genera en el CPU y copia.
 #
-# **Where this leads.** PyTorch and JAX are CuPy's cousins: an array on a device,
-# operations dispatched to kernels, plus autodiff and a compiler. Everything above
-# about transfers, synchronisation, precision and launch overhead applies unchanged.
+# **Donde esto lleva.** PyTorch y JAX son primos de CuPy: un array en un dispositivo, operaciones enviadas a kernels, más autodiferenciación y un compilador. Todo lo anterior sobre transferencias, sincronización, precisión y overhead de lanzamiento se aplica sin cambios.
 #
-# ## Checkpoint 2: your timing table
+# ## Checkpoint 2: tu tabla de tiempos
 
 # %%
 save_timings("timings_02_gpu.csv", ["impl", "n", "dtype", "scope", "min_s", "median_s"], timings)
@@ -322,6 +302,6 @@ if HAVE_GPU:
     print(f"after free: held {pool.total_bytes()/2**20:.0f} MB")
 
 # %% [markdown]
-# **Exit question for this block.** A colleague reports "the GPU is 40x faster"
-# for a kernel that runs for 2 ms. What three things do you ask before believing it?
-# (Synchronised? Transfers included? Same dtype and workload on both sides?)
+# **Pregunta de salida para este bloque.** Un colega reporta "el GPU es 40 veces más rápido"
+# para un kernel que tarda 2 ms. ¿Qué tres cosas preguntas antes de creerlo?
+# (Sincronizado? Transferes incluidos? Mismo dtype y carga de trabajo en ambos lados?)

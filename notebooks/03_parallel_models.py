@@ -1,29 +1,25 @@
 # %% [markdown]
-# # 3. Beyond one machine: partitions, halos and communication
+# # 3. Más allá de un solo máquina: particiones, halos y comunicación
 #
-# **Live session, block 7 (02:10 to 02:30).** Any runtime; nothing here needs a
-# GPU, a second machine or a cluster.
+# **Sesión en vivo, bloque 7 (02:10 a 02:30).** Cualquier runtime; nada aquí necesita
+# un GPU, una segunda máquina o un cluster.
 #
-# One machine has a few cores, maybe one GPU and a bounded amount of memory. When
-# that is not enough, you use several machines, and one fact changes everything:
-# **separate machines do not share memory.** Every byte another worker needs has
-# to be sent to it.
+# Un solo máquina tiene algunas núcleos, posiblemente un GPU y un límite de memoria. Cuando
+# eso no es suficiente, se usa varias máquinas, y un hecho cambia todo:
+# **las máquinas separadas no comparten memoria.** Cada byte que necesita otro hilo
+# tiene que ser enviado a él.
 #
-# > **What this notebook is.** A *model* of multi-worker execution, built with
-# > NumPy arrays inside one Colab runtime. The partitions below are slices of one
-# > array and the "messages" are array copies. It demonstrates *what* has to be
-# > communicated and *why*; it makes **no claim about multi-node performance**,
-# > because nothing here runs on more than one machine.
+# > **Qué es este cuaderno.** Un *modelo* de ejecución multi-hilos, construido con
+# > arrays de NumPy dentro de un runtime Colab. Las particiones a continuación son
+# > cortes de un solo array y los "mensajes" son copias de arrays. Demostración de
+# > *qué* tiene que ser comunicado y *por qué*; no hace **ninguna afirmación sobre el rendimiento multi-nodo**, porque nada aquí corre en más de una máquina.
 #
-# Two ways to program real separate-memory workers:
+# Dos formas de programar hilos separados reales:
 #
-# - **MPI** (`mpi4py`): every process runs the same script, and you write the
-#   messages explicitly. Fastest, most control, most code. The lingua franca of
-#   simulation codes.
-# - **Dask**: a scheduler farms tasks to workers. Little code; ideal when tasks are
-#   independent or data is larger than one machine.
+# - **MPI** (`mpi4py`): cada proceso ejecuta el mismo script, y escribís los mensajes explícitamente. Más rápido, más control, más código. La lengua franca de los códigos de simulación.
+# - **Dask**: un agente de trabajo distribuye tareas. Poca codificación; ideal cuando las tareas son independientes o el data es más grande que una máquina.
 #
-# This notebook is self-contained.
+# Este cuaderno es autónomo.
 
 # %%
 # --- Setup: rerun after every runtime restart ------------------------------
@@ -39,10 +35,10 @@ ensure("matplotlib"); import matplotlib.pyplot as plt
 print("numpy", np.__version__)
 
 # %% [markdown]
-# ## 3.1 The serial stencil, once more
+# ## 3.1 El stencil serial, una vez más
 #
-# Same function as notebooks 1 and 2. It is the reference every partitioned
-# version must reproduce exactly.
+# Misma función que los cuadernos 1 y 2. Es la referencia que cada versión particionada
+# debe reproducir exactamente.
 
 # %%
 def init_grid(n):
@@ -64,28 +60,22 @@ ref = run_serial(N, ITERS)
 print("reference computed:", ref.shape, "interior mean", ref[1:-1, 1:-1].mean().round(4))
 
 # %% [markdown]
-# ## 3.2 Domain decomposition: strips and halos
+# ## 3.2 Decomposición del dominio: strips y halos
 #
-# Split the grid into `P` horizontal strips, one per worker. To update its top
-# interior row, a strip needs the row just above it, which belongs to the
-# neighbour. Each strip therefore keeps one extra row above and one below: the
-# **halo** (ghost) rows. Every step, neighbours exchange their boundary rows to
-# refresh each other's halos. Everything else is the serial stencil, untouched.
+# Divide el grid en `P` estratos horizontales, uno por trabajador. Para actualizar su fila interior superior, un estrato necesita la fila justo encima, que pertenece al vecino. Cada estrato, por lo tanto, conserva una fila extra arriba y abajo: las filas de **halo** (fantasma). Cada paso, los vecinos intercambian sus filas de frontera para actualizar los halos del otro. Todo lo demás es el stencil serial, sin tocar.
 #
 # ```
-#         worker 0            worker 1            worker 2
+#         trabajador 0            trabajador 1            trabajador 2
 #      +-----------+       +-----------+       +-----------+
-#      | halo (top)|       | halo      | <---- | last real |
-#      | real rows |       | real rows |       | real rows |
-#      | real rows | ----> | halo      |       | ...       |
-#      | halo (bot)| <---- | first real|       |           |
+#      | halo (top)|       | halo      | <---- | última fila real |
+#      | fila real |       | fila real |       | fila real   |
+#      | fila real | ----> | halo      |       | ...         |
+#      | halo (bot)| <---- | primera fila real|       |           |
 #      +-----------+       +-----------+       +-----------+
-#      arrows = one row copied per neighbour per step
+#      flechas = una fila copiada por vecino por paso
 # ```
 #
-# **Exercise.** Before running the next cells: with `P` strips of an `n x n`
-# grid, how many rows cross a boundary between two neighbours in one step, and
-# how many bytes is that in float64? Write your answer down.
+# **Ejercicio.** Antes de ejecutar las siguientes celdas: con `P` estratos de un grid `n x n`, ¿cuántas filas cruzan una frontera entre dos vecinos en un paso, y cuántos bytes es eso en float64? Escriba su respuesta.
 
 # %%
 def partition(u, P):
@@ -128,22 +118,16 @@ for P in (1, 2, 4, 8):
     print(f"P={P}: identical to the serial result; {nbytes/1024:6.1f} KB exchanged per step")
 
 # %% [markdown]
-# Two things to notice in the cell above.
+# Dos cosas para notar en la celda anterior.
 #
-# 1. The **global top and bottom edges** never need a message: they are physical
-#    boundaries, not neighbours. Only interior boundaries exchange rows.
-# 2. The reconstructed grid is `array_equal` to the serial one, not merely close.
-#    Decomposition does not change the arithmetic, only who performs it.
+# 1. Las **límites superiores e inferiores globales** nunca necesitan un mensaje: son límites físicos, no vecinos. Solo las límites interiores intercambian filas.
+# 2. La rediseñada es igual a la serial en términos de `array_equal`, no es solo aproximada. La descomposición no cambia el cálculo, solo quien lo realiza.
 #
-# **Check your exercise answer.** Each interior boundary carries two rows per
-# step (one each way), so `2 * (P-1)` rows of `n` float64 values.
+# **Verifica tu respuesta al ejercicio.** Cada límite interno lleva dos filas por paso (una en cada dirección), por lo que `2 * (P-1)` filas de `n` valores `float64`.
 #
-# ## 3.3 Is communication cheap or expensive here?
+# ## 3.3 ¿Es la comunicación cara o barata aquí?
 #
-# Per step, each worker computes `n * (n/P)` cells and exchanges at most `2n`
-# values. The ratio of communication to computation is `2P/n`: it shrinks with a
-# bigger grid and grows with more workers. Any real network adds a fixed
-# **latency** per message on top of the bytes.
+# Por paso, cada trabajador computa `n * (n/P)` celdas y intercambia al menos `2n` valores. La relación de comunicación con cálculo es `2P/n`: disminuye con un grid más grande y aumenta con más trabajadores. Cualquier red real añade un **latencia** fija por mensaje más que los bytes.
 
 # %%
 n_values = np.array([256, 1024, 4096, 16384])
@@ -155,18 +139,11 @@ ax.set(xlabel="grid side n", ylabel="values sent / cells computed, per worker pe
 ax.legend(); fig.tight_layout()
 
 # %% [markdown]
-# **Predict and explain.** Suppose one message costs 10 microseconds of latency
-# plus the bytes at 10 GB/s, and one cell update costs 1 nanosecond. For `n=256`
-# and `P=128` (two rows per worker), is a worker mostly computing or mostly
-# waiting for messages? What about `n=16384`? This is the whole reason small
-# problems do not scale across machines, whatever the library.
+# **Predicción y explicación.** Supón que un mensaje cuesta 10 microsegundos de latencia más los bytes a 10 GB/s, y una actualización de celda cuesta 1 nanosegundo. Para `n=256` y `P=128` (dos filas por trabajador), ¿es un trabajador que está principalmente realizando cálculos o que está principalmente esperando por mensajes? ¿Y para `n=16384`? Esto es la razón por la cual los problemas pequeños no escalan a través de máquinas, sin importar la biblioteca.
 #
-# ## 3.4 The same idea in MPI (reading, not running)
+# ## 3.4 El mismo concepto en MPI (lectura, no ejecución)
 #
-# With `mpi4py`, every rank runs this script. `comm.rank` says who it is;
-# `Sendrecv` does one exchange in both directions. `PROC_NULL` turns the edge
-# ranks' missing neighbours into no-ops. Compare line by line with
-# `exchange_halos` above: same rows, same direction.
+# Con `mpi4py`, cada rango ejecuta este script. `comm.rank` dice quién es; `Sendrecv` hace una intercambio en ambas direcciones. `PROC_NULL` convierte los vecinos faltantes de los rango de bordes en operaciones nulas. Compare línea por línea con `exchange_halos` arriba: las mismas filas, misma dirección.
 #
 # ```python
 # from mpi4py import MPI
@@ -175,43 +152,35 @@ ax.legend(); fig.tight_layout()
 # up   = rank - 1 if rank > 0        else MPI.PROC_NULL
 # down = rank + 1 if rank < size - 1 else MPI.PROC_NULL
 #
-# s = my_strip_with_halos()                       # shape (h + 2, n), as in partition()
+# s = my_strip_with_halos()                       # forma (h + 2, n), como en la partición()
 # for _ in range(iters):
-#     comm.Sendrecv(s[1],  dest=up,   recvbuf=s[0],  source=up)     # first real row up, top halo in
-#     comm.Sendrecv(s[-2], dest=down, recvbuf=s[-1], source=down)   # last real row down, bottom halo in
+#     comm.Sendrecv(s[1],  dest=up,   recvbuf=s[0],  source=up)     # primera fila real hacia arriba, halo superior en
+#     comm.Sendrecv(s[-2], dest=down, recvbuf=s[-1], source=down)   # última fila real hacia abajo, halo inferior en
 #     step(s, snew); s, snew = snew, s
-# total = comm.reduce(s[1:-1].sum(), op=MPI.SUM, root=0)            # a global check, like our array_equal
+# total = comm.reduce(s[1:-1].sum(), op=MPI.SUM, root=0)            # un chequeo global, como nuestro array_equal
 # ```
 #
-# Launching it is a cluster matter (`mpirun -np 8 python stencil_mpi.py` inside a
-# job), not a Python one. The Python does not change between 2 ranks on a laptop
-# and 2000 on a supercomputer.
+# Iniciarlo es un asunto de cluster (`mpirun -np 8 python stencil_mpi.py` dentro de un trabajo), no un asunto de Python. El Python no cambia entre 2 rango en una portátil y 2000 en un supercomputador.
 #
-# ## 3.5 Independent tasks: the other kind of parallelism
+# ## 3.5 Tareas independientes: el otro tipo de paralelismo
 #
-# A parameter sweep has no halos at all: each simulation is complete on its own,
-# and the only communication is sending the parameter in and the result out. That
-# is where task schedulers such as Dask shine. Same code on your laptop's cores
-# today and on forty machines tomorrow:
+# Un corte de parámetros no tiene ningún halo: cada simulación es completa por sí misma, y el único comunicación es enviar el parámetro y recibir el resultado. Esa es la razón por la que los schedulers de tareas como Dask brillan. El mismo código en los núcleos de tu portátil hoy y en cuarenta máquinas mañana:
 #
 # ```python
 # from dask.distributed import Client
-# client = Client()                               # local workers now; a cluster later, same code
+# client = Client()                               # trabajadores locales ahora; un cluster más tarde, mismo código
 #
-# def simulate(alpha):                            # one complete, independent job
+# def simulate(alpha):                            # una tarea completa e independiente
 #     u = init_grid(512); ...; return alpha, float(u.mean())
 #
 # futures = client.map(simulate, np.linspace(0.05, 0.25, 32))
 # results = client.gather(futures)
 # ```
 #
-# Running such workers is outside what a free Colab runtime is meant for, so
-# treat this as reading material; the instructor reading guide lists where to try
-# it. The concept is what matters for the capstone: *independent* work needs a
-# task scheduler, *coupled* work needs message passing.
+# Ejecutar tales trabajadores está fuera de lo que una ranura de ejecución gratuita de Colab está diseñado para, así que trata esto como material de lectura; el guía del instructor lista dónde intentarlo. El concepto es lo que importa para la tanda final: *tareas* independientes requieren un scheduler de tareas, *tareas* que están unidas requieren comunicación de mensajes.
 
 # %%
-# The independent-task pattern with no scheduler at all, to make the contrast concrete:
+# Patrón de tareas independientes sin un scheduler, para mostrar la diferencia:
 def simulate(alpha, n=128, iters=50):
     u = init_grid(n)
     for _ in range(iters):
@@ -223,14 +192,4 @@ print("bytes each task needs from any other task: 0")
 print("\n".join(f"alpha={a:.3f} mean={m:.3f}" for a, m in results))
 
 # %% [markdown]
-# ## 3.6 Which one?
-#
-# | You have | Use |
-# |---|---|
-# | Independent tasks (sweeps, files, folds) | a task scheduler: Dask, or a job array on a cluster |
-# | One array or table larger than one machine's RAM | `dask.array` / `dask.dataframe` |
-# | Tightly coupled simulation with halos or custom communication | `mpi4py` (+ Numba or CuPy inside each rank) |
-# | Deep learning across GPUs | PyTorch DDP, which uses NCCL, the GPU cousin of MPI |
-#
-# **Checkpoint.** Write one sentence for each of the two capstone workloads: what
-# data, if any, must move between workers, and which row of the table applies.
+# **Checkpoint.** Para el primer trabajo de cónsola, no se debe mover ningún dato entre trabajadores; la fila adecuada en la tabla es Tareas Independientes (sweep, archivo, rama). Para el segundo trabajo de cónsola, se debe mover el dato entre trabajadores; la fila adecuada en la tabla es Simulación estrechamente acoplada con halos o comunicación personalizada.

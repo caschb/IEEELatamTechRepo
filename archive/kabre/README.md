@@ -1,22 +1,24 @@
-# Historical archive: Kabré cluster edition
+# Archivo histórico: Cluster de Kabré edición
 
-Everything in this directory belonged to the first edition of the course,
-which ran on the Kabré cluster at CeNAT (Jupyter through OnDemand on a
-`nukwa-l40s` node, MPI jobs through SLURM). It is kept for reference only and
-is **not part of the active course**. Nothing here is validated against the
-current notebooks or the current `env/pyproject.toml`.
+Todo lo que se encuentra en esta carpeta pertenecía a la primera edición del curso,
+que se ejecutó en el cluster Kabré en CeNAT (Jupyter a través de OnDemand en un
+`nukwa-l40s` nodo, trabajos MPI a través de SLURM). Se mantiene para referencia solo y
+no forma parte del curso activo. Nada aquí ha sido validado contra los notebooks actuales
+o el actual `env/pyproject.toml`.
 
-| Path | What it was |
+| Ruta | ¿Qué era |
 |---|---|
-| `env/setup_kabre.sh` | Built the uv venv against the cluster MPI and CUDA modules and registered a Jupyter kernel |
-| `env/smoke.py`, `env/run_smoke.sh`, `env/run_smoke.sbatch` | Smoke test of that venv on a GPU node |
-| `env/uv.lock` | Lockfile of the cluster environment (mpi4py, dask-jobqueue, CUDA 12 bindings) |
-| `mpi/` | Standalone two-node mpi4py hello job and a nested-sbatch diagnostic |
-| `notebooks/check_env.py`, `notebooks/00_check_environment.ipynb` | Kernel, GPU, MPI and SLURM reachability check |
-| `notebooks/03_multinode.py`, `.ipynb` | mpi4py halo-exchange stencil and dask-jobqueue `SLURMCluster`, submitted from the notebook |
-| `notebooks/execute.sh` | Headless execution of notebooks on an allocation |
+| `env/setup_kabre.sh` | Construyó el entorno de venv uv contra los módulos de MPI y CUDA del cluster y registró un kernel de Jupyter |
+| `env/smoke.py`, `env/run_smoke.sh`, `env/run_smoke.sbatch` | Prueba de gasolina del entorno venv en un nodo con GPU |
+| `env/uv.lock` | Archivo de bloqueo del entorno del cluster (mpi4py, dask-jobqueue, vinculaciones de CUDA 12) |
+| `mpi/` | Trabajo MPI4PY de dos nodos standalone y un diagnóstico anidado de `sbatch` |
+| `notebooks/check_env.py`, `notebooks/00_check_environment.ipynb` | Revisión de la llegada de kernel, GPU, MPI y SLURM |
+| `notebooks/03_multinode.py`, `.ipynb` | Estilo de halo de MPI4PY y `SLURMCluster` de dask-jobqueue, enviados desde el cuaderno |
+| `notebooks/execute.sh` | Ejecución sin cabeza de cuadernos en una asignación |
 
-The active course runs entirely in Google Colab; see the repository README.
-The cluster-specific procedures (module names, `mpirun` flags, the
-`orte_keep_fqdn_hostnames` workaround, submitting from a scrubbed environment)
-are preserved in the files above and in git history.
+El curso activo se ejecuta completamente en Google Colab; consulte el README del repositorio.
+Las procedimientos específicos del cluster (nombres de módulos, `mpirun` flags, la
+solución de `orte_keep_fqdn_hostnames` y la submisión desde un entorno limpiado) se mantienen en los archivos
+arriba y en la historia de git.
+
+Note: Los enlaces dentro de los cuadernos no se traducen.

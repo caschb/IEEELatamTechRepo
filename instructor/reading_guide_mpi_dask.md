@@ -1,63 +1,33 @@
-# Reading guide: MPI and Dask beyond one machine
+# Guía de lectura: MPI y Dask fuera de un solo sistema
 
-Notebook 03 teaches the concepts with a NumPy model inside one runtime. This
-guide is for students (and instructors) who want to run the real thing. None
-of it is required for the workshop, and none of it runs in a free Colab
-runtime, which is not meant to host distributed workers.
+Notebook 03 enseña los conceptos con un modelo de NumPy dentro de un solo entorno de ejecución. Esta guía está dirigida a estudiantes (y instructores) que quieren ejecutar lo real. Ninguno de ello es necesario para el taller, y ninguno de ello corre en un entorno Colab gratuito, que no está diseñado para hospedar trabajadores distribuidos.
 
-## Message passing with mpi4py
+## Comunicación con mpi4py
 
-- Concepts to have straight from notebook 03: ranks, `comm.rank` and
-  `comm.size`, point-to-point (`Sendrecv`) versus collective (`reduce`,
-  `bcast`, `gather`), halos, and the `2P/n` communication-to-compute ratio.
-- The mpi4py tutorial (https://mpi4py.readthedocs.io/en/stable/tutorial.html)
-  covers exactly the `Sendrecv` and `reduce` calls shown in section 3.4. Read
-  "Point-to-point" and "Collective" and note the difference between the
-  lower-case (pickled objects) and upper-case (buffers, NumPy arrays) methods.
-  The stencil uses the upper-case ones.
-- To try it on a laptop: `pip install mpi4py` needs an MPI library (on Linux
-  `apt install libopenmpi-dev`, on macOS `brew install open-mpi`); then
-  `mpirun -np 4 python stencil_mpi.py`. Four ranks on one laptop already show
-  the correctness argument (total heat independent of rank count), not the
-  speed.
-- On a cluster the launch is a job script; the cluster's own documentation
-  decides the launcher and flags. The earlier edition of this course, in
-  `archive/kabre/`, shows one such setup and its pitfalls.
-- Hybrid parallelism: one Numba thread pool per rank, sized to the cores the
-  rank was given (`NUMBA_NUM_THREADS`), or one GPU per rank with CuPy. The
-  Python inside the rank is the code from notebooks 1 and 2, unchanged.
+- Conceptos que deben estar claros desde el Notebook 03: rangos, `comm.rank` y `comm.size`, comunicación punto a punto (`Sendrecv`) versus colectiva (`reduce`, `bcast`, `gather`), halos, y la relación de comunicación a procesamiento de `2P/n`.
+- El tutorial de mpi4py (https://mpi4py.readthedocs.io/en/stable/tutorial.html) cubre exactamente las llamadas de `Sendrecv` y `reduce` mostradas en el apartado 3.4. Lee "Punto a Punto" y "Colectiva" y nota la diferencia entre los métodos en minúsculas (objetos pickled) y mayúsculas (buffers, arrays NumPy). El stencil utiliza los métodos en mayúsculas.
+- Para probarlo en un portátil: `pip install mpi4py` necesita una biblioteca MPI (en Linux `apt install libopenmpi-dev`, en macOS `brew install open-mpi`); luego `mpirun -np 4 python stencil_mpi.py`. Cuatro rangos en un portátil ya muestran el argumento de correctitud (calor total independiente del número de rangos), pero no la velocidad.
+- En un cluster, el lanzamiento es un script de trabajo; la documentación del cluster decide el lanzador y las banderas. La edición anterior de este curso, en `archive/kabre/`, muestra uno de esos setups y sus fallos.
+- Paralelismo híbrido: una hilera de Numba por rangos, tamaño a las hilas que el rangos recibió (`NUMBA_NUM_THREADS`), o una GPU por rangos con CuPy. El código dentro de un rangos es el de los Notebooks 1 y 2, sin cambios.
 
-## Task scheduling with Dask
+## Planificación de tareas con Dask
 
-- Concepts from notebook 03: independent tasks exchange zero bytes with each
-  other; the only traffic is arguments in and results out.
-- Start with `dask.distributed` on your own machine: `pip install "dask[distributed]"`,
-  then `Client()` with no arguments starts local workers. The `client.map` and
-  `client.gather` calls from section 3.5 run as written. The dashboard link
-  the client prints shows tasks moving between workers.
-- Same code on a cluster: `dask-jobqueue` (https://jobqueue.dask.org) creates
-  the workers as batch jobs (`SLURMCluster`, `PBSCluster`, ...). Read "How
-  this works" and "Configuration" before the API. Dask's own "Deploy Dask
-  Clusters" page lists the other options (Kubernetes, cloud).
-- Larger-than-memory data: `dask.array` and `dask.dataframe` chunk NumPy and
-  pandas work across workers with the same API. Try `dask.array.zeros((20000,
-  20000), chunks=(2000, 2000))` and the stencil slices on it; the graph it
-  builds is the halo exchange from notebook 03, done for you.
+- Conceptos del Notebook 03: tareas independientes intercambian cero bytes entre sí; el tráfico es solo los argumentos entrantes y los resultados salientes.
+- Empieza con `dask.distributed` en tu propio sistema: `pip install "dask[distributed]"`, luego `Client()` sin argumentos inicia trabajadores locales. Las llamadas `client.map` y `client.gather` del apartado 3.5 corren como se escriben. La URL del cuadro de estado que el cliente imprime muestra tareas moviéndose entre trabajadores.
+- El mismo código en un cluster: `dask-jobqueue` (https://jobqueue.dask.org) crea trabajadores como trabajos de lotes (`SLURMCluster`, `PBSCluster`, ...). Lee "Cómo funciona esto" y "Configuración" antes de la API. La página de Dask "Despliegue de Clusters Dask" lista las otras opciones (Kubernetes, nube).
+- Datos más grandes que la RAM: `dask.array` y `dask.dataframe` descompone el trabajo de NumPy y pandas a través de los trabajadores con la misma API. Prueba `dask.array.zeros((20000, 20000), chunks=(2000, 2000))` y los cortes del stencil sobre él; el gráfico que construye es el intercambio de halos del Notebook 03, hecho por ti.
 
-## Choosing
+## ¿Qué elegir?
 
-| Question | If yes | If no |
+| Pregunta | Sí | No |
 |---|---|---|
-| Do tasks need each other's data during the computation? | message passing | task scheduler |
-| Does one array or table exceed one machine's RAM? | `dask.array` / `dask.dataframe` (or MPI with explicit decomposition) | keep it on one machine |
-| Is the per-task work under a millisecond? | batch tasks together first; neither tool helps with that granularity | fine |
-| Is the code a deep-learning model? | PyTorch DDP / NCCL, not MPI directly | as above |
+| Los tareas necesitan los datos de las otras tareas durante el cálculo? | Comunicación punto a punto | Planificador de tareas |
+| Un array o tabla excede la RAM de un solo sistema? | `dask.array` / `dask.dataframe` (o MPI con descomposición explícita) | Manténlo en un solo sistema |
+| El trabajo por tarea es menos de un milisegundo? | Agrupa las tareas en lotes primero; ninguno de los dos no ayuda con ese detalle | Bien |
+| El código es un modelo de aprendizaje profundo? | PyTorch DDP / NCCL, no MPI directamente | Como arriba |
 
-## What to measure before scaling out
+## ¿Qué medir antes de escalar
 
-1. The serial and single-machine baselines from notebooks 1 and 2.
-2. The fraction of time in communication at a small worker count. If it is
-   already large, more workers make it worse.
-3. Whether the result is identical across worker counts (the `array_equal`
-   check from notebook 03, or a conserved quantity). A scaling result without
-   that check is not a result.
+1. Las bases de cálculo serial y en un solo sistema del Notebook 1 y 2.
+2. La fracción de tiempo en comunicación con un número pequeño de trabajadores. Si ya es grande, más trabajadores lo hacen peor.
+3. Si el resultado es idéntico para diferentes números de trabajadores (el `array_equal` del Notebook 03, o una cantidad conservada). Un resultado de escalado sin ese chequeo no es un resultado.

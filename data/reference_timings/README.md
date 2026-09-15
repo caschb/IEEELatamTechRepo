@@ -1,37 +1,31 @@
-# Recorded timing tables
+# Tablas de tiempo grabado
 
-Notebooks 01 and 02 load these files when the live runtime cannot produce the
-comparison itself (a single-core runtime for the thread sweep, no GPU for the
-device timings). Each file starts with `# key: value` lines describing the
-runtime that produced it, followed by a CSV table. The notebooks print that
-metadata next to the numbers so that recorded results are never mistaken for
-live ones.
+Los cuadernos 01 y 02 cargan estos archivos cuando la ejecución en vivo no pueda producir
+la comparación por sí misma (un entorno de ejecución de CPU para el recorrido de hilos, sin GPU para los
+tiempos de dispositivo). Cada archivo comienza con líneas `# key: value` que describen el
+entorno que lo produjo, seguidas de una tabla CSV. Los cuadernos imprimen esta metadata junto a los números
+para que los resultados grabados nunca sean confundidos con los de ejecución en vivo.
 
-| File | Produced by | Used by |
+| Archivo | Producido por | Usado por |
 |---|---|---|
-| `01_threads.csv` | notebook 01, "Checkpoint 3" cell | notebook 01, thread-scaling section, when fewer than two thread counts can be tested |
-| `02_gpu.csv` | notebook 02, "Checkpoint 2" cell | notebook 02, size sweep and transfer sections, in CPU-fallback mode |
-| `04_capstone.csv` | notebook 04 | instructor reference only |
+| `01_threads.csv` | cuaderno 01, "Checkpoint 3" | cuaderno 01, sección de escalado de hilos, cuando no se pueden probar más de dos cantidades de hilos |
+| `02_gpu.csv` | cuaderno 02, "Checkpoint 2" | cuaderno 02, secciones de recorrido de tamaño y transferencia, en modo de relleno de CPU |
+| `04_capstone.csv` | cuaderno 04 | solo para referencia del instructor |
 
-## Status: interim data
+## Estado: datos intermedios
 
-The current files come from the author's workstation (32-core CPU, NVIDIA
-GeForce RTX 4090, recorded in the metadata lines), **not from Google Colab**.
-They exist so that the fallback path is exercised end to end. Release gate 4 in
-`instructor/validation.md` replaces them with a documented Colab GPU run:
+Los archivos actuales provienen del equipo del autor (CPU de 32 núcleos, NVIDIA GeForce RTX 4090, registrados en las líneas de
+metadata), **no provienen de Google Colab**. Existen para que el camino de relleno se ejecute de principio a fin. La
+relevo 4 en `instructor/validation.md` reemplaza estos con una ejecución de GPU documentada en Colab:
 
-1. Open notebooks 01 and 02 in Colab on a fresh GPU runtime, run all cells.
-2. Download `timings_01_cpu.csv` and `timings_02_gpu.csv` from the Files panel.
-3. Copy them here as `01_threads.csv` and `02_gpu.csv`, commit, push.
-4. Re-run notebook 02 on a CPU runtime and confirm the "RECORDED GPU RUN" line
-   shows the Colab runtime and GPU.
+1. Abra los cuadernos 01 y 02 en Colab en un nuevo entorno de ejecución de GPU, ejecute todas las celdas.
+2. Descargue `timings_01_cpu.csv` y `timings_02_gpu.csv` desde la pestaña de Archivos.
+3. Copie estos archivos aquí como `01_threads.csv` y `02_gpu.csv`, comita, proporcione.
+4. Ejecute nuevamente el cuaderno 02 en un entorno de CPU y confirme que la línea "RECORDED GPU RUN" muestre el
+   entorno de Colab y la GPU.
 
-The notebooks fetch the files from the `main` branch of this repository over
-HTTPS; the authoring validation script reads the local copies instead.
+Los cuadernos obtienen los archivos desde la rama `main` de este repositorio a través de HTTPS; el script de validación del autor lee las copias locales.
 
-## The GPU demonstration recording
+## Grabación del demostración de GPU
 
-Record the instructor's GPU run of notebook 02 (screen capture, 5 to 8 minutes,
-from "Change runtime type" to the final timing table) and put the link in
-`instructor/run_of_show.md`. The recording is the second fallback, after this
-table, for students without a GPU.
+Grabar la ejecución del instructor del cuaderno 02 con GPU (captura de pantalla, 5 a 8 minutos, desde "Cambiar tipo de ejecución" hasta la tabla de tiempos finales) y poner el enlace en `instructor/run_of_show.md`. La grabación es el segundo relleno, después de esta tabla, para los estudiantes sin GPU.

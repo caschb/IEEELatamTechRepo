@@ -1,60 +1,46 @@
-# Preparation package (45 to 60 minutes)
+# Paquete de preparación (45 a 60 minutos)
 
-Do this before the workshop, ideally a few days ahead so there is time to fix
-problems. You need a browser, a Google account, and a normal computer. A
-standard **CPU** Colab runtime is enough; you do not need a GPU for anything
-here, and a completed CPU check is all the workshop requires.
+Realiza esto antes de la sesión, idealmente unos días antes para tener tiempo de solucionar problemas. Necesitas un navegador, una cuenta de Google y un computador normal. Una **CPU** Colab runtime es suficiente; no necesitas una GPU para nada aquí, y una prueba de CPU completada es todo lo que requiere la sesión.
 
-## What you will be able to do afterwards
+## Lo que podrás hacer después
 
-- Open a course notebook in Colab, save your own copy, run and edit cells,
-  install the packages, and recover after a runtime restart.
-- Recognise the small program (a heat-diffusion stencil) that every live
-  session builds on, and write one line of NumPy slicing for it.
-- Explain, in a sentence each: what a speedup is, why a GPU has its own memory,
-  and what a timing should and should not include.
+- Abrir un cuaderno de curso en Colab, guardar tu propia copia, ejecutar y editar celdas, instalar paquetes y recuperar después de una reinicio de la sesión de tiempo.
+- Reconocer el pequeño programa (un stencil de difusión de calor) que cada sesión de vida construye y escribir una línea de slicing de NumPy para él.
+- Explicar, en una frase cada una: qué es una aceleración, por qué una GPU tiene su propia memoria, y qué una medición debería y no debería incluir.
 
-## Prerequisites
+## Requisitos previos
 
-Basic Python: defining a function, a `for` loop, a list. If that is rusty, do
-the optional [Python and NumPy refresher](python_numpy_refresher.md) first. It
-is not counted in the hour.
+Python básico: definir una función, un bucle `for`, una lista. Si eso está olvidado, primero haz el refrescante [Refrescador de Python y NumPy](python_numpy_refresher.md). No cuenta como hora.
 
-## Do these in order
+## Haz estos en orden
 
-| # | Item | Time | Done when |
+| N° | Item | Tiempo | He hecho cuando |
 |---|---|---:|---|
-| 1 | Read [`primer.md`](primer.md) | 15 min | You can answer the four questions at its end |
-| 2 | [Is my Colab ready?](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_colab_ready.ipynb) | 10-15 min | The last cell prints `READY for the workshop` and you saved the notebook |
-| 3 | [The running example](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) | 10-15 min | The check cell prints `PASS` and you saved the notebook |
-| 4 | [`self_check.md`](self_check.md) | 5-10 min | You read the explanation for any question you got wrong |
+| 1 | Leer [`primer.md`](primer.md) | 15 min | Puedes responder a las cuatro preguntas al final |
+| 2 | [¿Está mi Colab listo?](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_colab_ready.ipynb) | 10-15 min | La última celda imprime `READY para la sesión` y guardaste el cuaderno |
+| 3 | [Ejemplo de ejecución](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/00_stencil_practice.ipynb) | 10-15 min | La celda de chequeo imprime `PASS` y guardaste el cuaderno |
+| 4 | [`self_check.md`](self_check.md) | 5-10 min | Leí la explicación para cualquier pregunta que te salió mal |
 
-## Checklist
+## Verificación
 
-- [ ] I saved my own copy of each notebook (File > Save a copy in Drive).
-- [ ] The readiness notebook printed `READY for the workshop`.
-- [ ] I restarted the runtime and ran everything again; it still passed.
-- [ ] The stencil practice check printed `PASS`.
-- [ ] I copied the `STATUS ...` line from the readiness notebook somewhere I can find it.
+- [ ] Guardé mi propia copia de cada cuaderno (Archivo > Guardar una copia en Drive).
+- [ ] El cuaderno de preparación imprimió `READY para la sesión`.
+- [ ] Reinicié la sesión de tiempo y ejecuté todo de nuevo; aún pasó.
+- [ ] El chequeo de stencil imprime `PASS`.
+- [ ] Copié la línea `STATUS ...` del cuaderno de preparación a algún lugar donde pueda encontrarla.
 
-## Saving and downloading your work
+## Guardar y descargar tu trabajo
 
-Colab saves your copy to Google Drive automatically (also Ctrl+S). To keep a
-file the notebook wrote (for example a timing table), open the **Files** panel
-on the left, right-click the file, **Download**. Files in the runtime disappear
-when the runtime is deleted; your notebook copy in Drive does not.
+Colab guarda tu copia en Drive automáticamente (también Ctrl+S). Para mantener un archivo que el cuaderno escribió (por ejemplo, una tabla de tiempos), abre el panel de **Archivos** en la izquierda, haz clic derecho en el archivo, **Descargar**. Los archivos en la sesión de tiempo desaparecen cuando se elimina la sesión de tiempo; tu copia de la nota en Drive no.
 
-## Two things that surprise people
+## Dos cosas que sorprenden a la gente
 
-- **A new runtime has nothing installed.** The setup cell at the top of every
-  notebook installs what is missing. Run it again after any restart. It is fast
-  the second time.
-- **Runtimes disconnect.** Colab ends idle sessions and enforces usage limits.
-  Nothing is lost that you saved; rerun from the top.
+- **Una nueva sesión de tiempo no tiene nada instalado.** La celda de configuración al principio de cada cuaderno instala lo que falta. Rehazla después de cualquier reinicio. Es rápida la segunda vez.
+- **Las sesiones de tiempo se desconectan.** Colab termina las sesiones inactivas y impone límites de uso. Nada se pierde que hayas guardado; reinicia desde el principio.
 
-## If something does not work
+## Si algo no funciona
 
-Paste the `STATUS ...` line (or the error) and the step number into the
-workshop's help channel that the organisers announced, or email the instructor.
-Say which browser you use. During the event, the first ten minutes are for
-fixing exactly these problems, so do not worry if something is still open.
+Se puede compartir la línea `STATUS ...` (o el error), el número de paso y el
+navegador utilizado en el canal de ayuda anunciado por la organización, o enviar
+esa información al instructor. Los primeros diez minutos del evento están
+reservados para resolver los problemas pendientes de configuración.

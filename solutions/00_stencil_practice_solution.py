@@ -1,12 +1,11 @@
 # %% [markdown]
-# # 0b. The running example: a heat-diffusion stencil (SOLUTION)
+# # 0b. Ejemplo de ejecución: un stencil de difusión de calor (SOLUCIÓN)
 #
-# Every session of the workshop uses one small program, so that we can spend the
-# live time on measuring and speeding it up rather than on explaining it. This
-# notebook shows you what it does. No physics or numerical-methods background
-# is assumed. Standard CPU runtime.
+# Cada sesión del taller utiliza un pequeño programa, para que podamos dedicar
+# el tiempo en vivo a su medición y aceleración, en lugar de explicarlo. Este
+# notebook muestra lo que hace. No se asume ningún conocimiento de física o métodos numéricos. Cadena de ejecución estándar de CPU.
 #
-# Save a copy in Drive first (**File > Save a copy in Drive**).
+# Guarda una copia en Drive primero (**File > Guardar una copia en Drive**).
 
 # %%
 import numpy as np
@@ -21,15 +20,12 @@ u = init_grid(8)
 print(u)
 
 # %% [markdown]
-# ## What one step does
+# ## ¿Qué una sola etapa hace
 #
-# Picture a square metal plate. The top edge is kept hot. At every step, each
-# interior cell takes the **average of its four neighbours** (up, down, left,
-# right). Heat spreads down from the hot edge, one row per step at first. The
-# edge cells never change: they are the boundary condition.
+# Imagina una placa metálica cuadrada. La parte superior está caliente. En cada etapa, cada celda interior toma el **promedio de sus cuatro vecinos** (arriba, abajo, izquierda, derecha). La calor se extiende hacia abajo desde la parte caliente, una fila por etapa al principio. Las celdas de la borda nunca cambian: son las condiciones de contorno.
 #
-# Here is that rule written with plain loops. It is slow but obviously right,
-# which makes it our **reference**.
+# Esta es la misma regla escrita con bucles directos. Aunque su ejecución es lenta,
+# permite comprobar cada operación y por eso se usa como **referencia**.
 
 # %%
 def step_python(u, unew):
@@ -44,9 +40,6 @@ after_one = step_python(u.tolist(), u.tolist())
 print(np.array(after_one))
 
 # %% [markdown]
-# Only row 1 changed: each of its interior cells now holds `0.25 * 100 = 25`.
-# The corners of row 1 (columns 0 and 7) are edges and stay at 0.
-#
 # ## Visualising it
 
 # %%
@@ -64,15 +57,14 @@ for ax, iters in zip(axes, (0, 10, 100)):
 fig.colorbar(im, ax=axes, label="temperature"); plt.show()
 
 # %% [markdown]
-# ## Your task: the same step with NumPy slices
+# ## Ejercicio: el mismo paso con slices de NumPy
 #
-# Loops in Python are slow. NumPy lets us update all interior cells at once with
-# **slices**. `u[1:-1, 1:-1]` is every interior cell. Its neighbour *above* is
-# `u[:-2, 1:-1]` (rows shifted up by one), its neighbour *below* is `u[2:, 1:-1]`,
-# and its neighbour to the *left* is `u[1:-1, :-2]`.
+# Loops en Python son lentos. NumPy nos permite actualizar todas las celdas interiores de una vez con
+# **slices**. `u[1:-1, 1:-1]` son todas las celdas interiores. Su vecino *arriba* es
+# `u[:-2, 1:-1]` (las filas desplazadas hacia arriba por una unidad), su vecino *abajo* es `u[2:, 1:-1]`,
+# y su vecino *izquierda* es `u[1:-1, :-2]`.
 #
-# **Complete the fourth term**: the neighbour to the *right*. Replace the
-# placeholder and run the cell. (Hint: shift the columns, not the rows.)
+# **Complete the fourth term**: el vecino *derecha*. Reemplaza el placeholder y ejecuta la celda. (Sugerencia: desplaza las columnas, no las filas.)
 
 # %%
 def step_numpy(u, unew):
@@ -81,12 +73,13 @@ def step_numpy(u, unew):
     return unew
 
 # %% [markdown]
-# ## Check against the reference
+# ## Comprobación con la referencia
 #
-# Two checks. First, the interior sum after one step on an 8x8 grid is exactly
-# `150.0` (six interior cells of row 1 at 25 each). That check is weak: after one
-# step almost every cell is still zero, so a wrong slice can pass it. The second
-# check, the full grid after 20 steps against the loop version, is the real one.
+# Se aplican dos comprobaciones. La primera verifica que la suma interior tras un
+# paso en una cuadrícula de 8x8 sea `150.0` (seis celdas interiores de la fila 1,
+# con un valor de 25 cada una). Esta prueba no detecta todos los errores porque casi
+# todas las celdas siguen en cero. La segunda compara la cuadrícula completa después
+# de 20 pasos con la versión basada en bucles.
 
 # %%
 u = init_grid(8)
@@ -109,11 +102,11 @@ else:
           "Check which neighbour your fourth slice really selects.")
 
 # %% [markdown]
-# ## What to remember for the workshop
+# ## Qué recordar para la sesión
 #
-# - `init_grid(n)`: `n x n` grid, hot top edge, zero elsewhere.
-# - `step_*(u, unew)`: reads `u`, writes `unew`; the caller swaps them each step.
-# - The pure-Python version is the reference. Every faster version must agree
-#   with it, and we will check that before timing anything.
+# - `init_grid(n)`: `n x n` grid, con borde caliente en la parte superior, cero en el resto.
+# - `step_*(u, unew)`: lee `u`, escribe `unew`; el llamador intercambia ellos en cada paso.
+# - La versión en Python puro es el punto de referencia. Cada versión más rápida debe coincidir con ella,
+#   y la comprobaremos antes de medir cualquier cosa.
 #
-# Save the notebook. Then read `prep/self_check.md`.
+# Guarda el notebook. Luego lee `prep/self_check.md`.

@@ -1,13 +1,13 @@
 # %% [markdown]
-# # Extension A: threads, processes and the GIL (optional, not covered live)
+# # Extensión A: hilos, procesos y el GIL (opcional, no cubierto en vivo)
 #
-# Numba's `prange` works because compiled code does not hold Python's Global
-# Interpreter Lock (GIL). Pure Python code does, so Python *threads* do not run
-# Python code in parallel. This extension watches one independent-task sweep run
-# three ways. CPU runtime; the number of workers adapts to the runtime.
+# La función `prange` de Numba funciona porque el código compilado no sosten
+# el Lock Global Interpreter (GIL) de Python. El código Python sí lo hace, por lo que
+# las *threads* de Python no ejecutan código Python en paralelo. Esta extensión observa
+# una tarea independiente que se ejecuta de tres formas diferentes. El tiempo de ejecución en CPU; el número de trabajadores se adapta al tiempo de ejecución.
 #
-# *Status: optional extension, validated on an author machine, not part of the
-# 180-minute session. If it does not run in your Colab, skip it.*
+# *Estado: extensión opcional, validada en una máquina del autor, no parte del
+# sesión de 180 minutos. Si no se ejecuta en tu Colab, déjala de lado.*
 
 # %%
 import os, time
@@ -37,18 +37,11 @@ with ProcessPoolExecutor(WORKERS) as ex:
     t_procs = timed(f"{WORKERS} processes", lambda: list(ex.map(slow_python_task, seeds)))
 
 # %% [markdown]
-# Typical outcome on a machine with several cores: threads are no faster than
-# serial (they take turns holding one lock), processes are faster (each has its
-# own interpreter and lock) but pay to start and to pickle arguments and results.
-# On a 1-CPU runtime none of the three can be faster than serial. Whatever you
-# saw, the rule is: processes for pure-Python tasks that are coarse (one per
-# file, one per parameter set); threads for compiled or I/O code that releases
-# the GIL (`@njit(nogil=True)`, most of NumPy, file and network I/O).
+# Resultado típico en una máquina con varios núcleos: las hilos no son más rápidos que
+# serial (toman turnos para obtener una licencia), los procesos son más rápidos (cada uno tiene su propio intérprete y licencia) pero pagan por iniciar y para serializar los argumentos y los resultados.
+# En un entorno de ejecución con solo CPU, ninguno de los tres puede ser más rápido que serial. Lo que veas, la regla es: los procesos para tareas puramente Python que son gruesas (uno por archivo, uno por conjunto de parámetros); los hilos para código compilado o con liberación del GIL (como `@njit(nogil=True)`, la mayoría de NumPy, lectura y escritura en archivos y red).
 #
-# ## joblib: the same idea with nicer ergonomics
-#
-# `joblib` is what scikit-learn uses internally. Dask offers the same `map`
-# shape and can later move to many machines without code changes.
+# ## joblib: la misma idea con una ergonomía mejorada
 
 # %%
 import importlib.util, subprocess, sys
@@ -59,7 +52,7 @@ from joblib import Parallel, delayed
 t_joblib = timed(f"joblib, {WORKERS} workers", lambda: Parallel(n_jobs=WORKERS)(delayed(slow_python_task)(s) for s in seeds))
 
 # %% [markdown]
-# ## A compiled task that releases the GIL
+# ## Tarea compilada que libera el GIL
 
 # %%
 from numba import njit
@@ -78,6 +71,5 @@ with ThreadPoolExecutor(WORKERS) as ex:
     t_c_threads = timed(f"compiled, {WORKERS} threads", lambda: list(ex.map(compiled_task, seeds)))
 
 # %% [markdown]
-# With `nogil=True`, threads can run the compiled function at the same time, so
-# on a multi-core runtime the threaded version wins with no pickling and no
-# process start-up. This is the mechanism `prange` uses internally.
+# Con `nogil=True`, las hilas pueden ejecutar la función compilada al mismo tiempo, por lo que
+# en un entorno de múltiples núcleos, la versión en hilas gana sin serialización y sin inicio de proceso. Este es el mecanismo que `prange` utiliza internamente.

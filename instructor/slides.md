@@ -3,67 +3,67 @@ marp: true
 paginate: true
 ---
 
-# Modern Parallel Programming in Python for HPC and AI
+# Programación Paralela Moderna en Python para HPC y AI
 
-Measure. Vectorise. Compile. Then, and only then, parallelise.
+Medida. Vectorización. Compilación. Luego, y solo entonces, paralelización.
 
-Three hours, one running example, everything in Colab.
-
----
-
-# Outcomes
-
-1. Establish a correct reference result and measure repeated execution fairly.
-2. Compare Python, NumPy and compiled Numba; explain why more threads may not help.
-3. Run an array operation with CuPy, check it, and separate compute time from transfer-inclusive time.
-4. Explain when separate-memory workers must communicate, and choose a task scheduler or message passing accordingly.
-
-No target speedup. Correct results, explained measurements.
+Tres horas, un ejemplo en ejecución, todo en Colab.
 
 ---
 
-# The running example: a heat-diffusion stencil
+# Resultados
 
-- `n x n` grid, top edge held at 100, other edges at 0.
-- Each step: every interior cell becomes the average of its four neighbours.
-- Edges never change: they are the boundary condition.
-- The plain-Python loop is the **reference**. Every faster version must agree with it.
+1. Establece un resultado de referencia correcto y mide repetidas ejecuciones de manera justa.
+2. Compara Python, NumPy y compilado Numba; explica por qué más hilos no ayudarían.
+3. Ejecuta una operación de array con CuPy, comprueba que funciona y separa el tiempo de cálculo del tiempo incluido en transferencia.
+4. Explica cuando los hilos separados deben comunicarse y elige un administrador de tareas o comunicación de mensajes según sea necesario.
+
+No se busca un aceleramiento específico. Resultados correctos, explicados.
+
+---
+
+# Ejemplo de ejecución: un stencil de difusión de calor
+
+- Una cuadrícula `n x n`, la parte superior fija en 100, las demás en 0.
+- Cada paso: cada celda interior se convierte en la media de sus cuatro vecinos.
+- Las bordes nunca cambian: son las condiciones de frontera.
+- El bucle de Python estándar es el **referencia**. Cualquier versión más rápida debe coincidir con él.
 
 ```python
 unew[1:-1, 1:-1] = 0.25 * (u[:-2, 1:-1] + u[2:, 1:-1] + u[1:-1, :-2] + u[1:-1, 2:])
 ```
 
-Slices are views. Each `+` allocates an intermediate array.
+Las cortesías son vistas. Cada `+` asigna un array intermedio.
 
 ---
 
-# What a timing contains
+# ¿Qué contiene un tiempo de ejecución
 
-- **Warm up** first: compilation, imports, caches, allocation.
-- **Repeat**; report min (least interference) or median (typical). Say which.
-- `%timeit` prints **mean and std. dev.** across runs; `.best` on request.
-- **Same experiment**: same runtime, workload, dtype, steps.
-- On a GPU: **synchronise** before starting and before stopping the clock.
+- **Calentamiento** primero: compilación, importaciones, cachés, asignaciones.
+- **Repetir**; reporta el mínimo (menos interferencia) o el mediano (típico). Decile qué.
+- `%timeit` imprime **promedio y desviación estándar** entre ejecuciones; `.best` a petición.
+- **Mismo experimento**: mismo tiempo de ejecución, carga de trabajo, tipo de dato, pasos.
+- En un GPU: **sincronizar** antes de comenzar y antes de detener el cronómetro.
 
-A number from another machine is a different experiment.
+Un número de otra máquina es un experimento diferente.
 
 ---
 
-# Amdahl's law
+# Ley de Amdahl
 
     speedup(p) = 1 / (s + (1 - s) / p)
 
-10% serial, 4 cores: 3.1x. 16 cores: 6.4x. Unlimited: 10x.
+10% serial, 4 núcleos: 3.1x. 16 núcleos: 6.4x. Sin límite: 10x.
 
-The serial fraction sets the ceiling. In practice the ceiling comes sooner:
-memory bandwidth, coordination, shared cores.
+La fracción serial establece el techo. En la práctica, el techo llega antes:
+la banda ancha de memoria, la coordinación, los núcleos compartidos.
 
-For our stencil, a poor fit to Amdahl is usually **memory bandwidth**, not
-serial code.
+Para nuestro stencil, una mala ajuste a Amdahl suele ser **la banda ancha de memoria**, no
+el código serial.
 
 ---
 
-# Host memory and device memory
+# Memoria del host y memoria del dispositivo
 
 ```
    CPU  <-- RAM -->              PCIe (tens of GB/s)            <-- VRAM --> GPU
@@ -71,73 +71,72 @@ serial code.
                     x.get()        <-------------------------
 ```
 
-- Move data once, compute a lot, move back once.
-- `cp.asarray` inside a loop is usually slower than NumPy.
-- Report **compute-only** and **transfer-inclusive** scopes separately.
+- Mover datos una vez, hacer mucho cálculo, mover de vuelta una vez.
+- `cp.asarray` dentro de un bucle suele ser más lento que NumPy.
+- Reporta **tiempo de cálculo solo** y **incluido transferencia** separadamente.
 
 ---
 
-# Timing scope, on one slide
+# Escala de tiempo, en una sola diapositiva
 
-| scope | includes |
+| escala | incluye |
 |---|---|
-| compute-only | kernels on data already on the device, sync at both ends |
-| transfer-inclusive | upload, kernels, download, sync at both ends |
-| wrong | launch only, no sync |
+| tiempo de cálculo solo | cálculos en datos ya en el dispositivo, sincronización en ambos extremos |
+| incluido transferencia | subida, cálculos, bajada, sincronización en ambos extremos |
+| equivocado | lanzamiento solo, no sincronización |
 
-"40x faster": synchronised? transfers inside? same workload and dtype?
+"40x más rápido": sincronización? transferencias dentro? mismo carga de trabajo y tipo de dato?
 
 ---
 
-# Partitions and halos
+# Particiones y halos
 
 ```
-   worker 0            worker 1            worker 2
+   trabajador 0            trabajador 1            trabajador 2
 +-----------+       +-----------+       +-----------+
-| halo (top)|       | halo      | <---- | last real |
-| real rows |       | real rows |       | real rows |
-| real rows | ----> | halo      |       | ...       |
-| halo (bot)| <---- | first real|       |           |
+| halo (arriba)|       | halo      | <---- | último real |
+| real filas |       | real filas |       | real filas |
+| real filas | ----> | halo      |       | ...       |
+| halo (abajo)| <---- | primer real|       |           |
 +-----------+       +-----------+       +-----------+
 ```
 
-- Each step: two rows per interior boundary, one each way.
-- Communication / computation per worker: `2P / n`. Grows with P, shrinks with n.
-- Plus a fixed latency per message. Small problems do not scale across machines.
+- Cada paso: dos filas por cada borde interno, una en cada dirección.
+- Comunicación / cálculo por trabajador: `2P / n`. Aumenta con P, disminuye con n.
+- Además, una latencia fija por mensaje. Problemas pequeños no escalan entre máquinas.
 
 ---
 
-# Two programming models
+# Dos modelos de programación
 
-- **Message passing (MPI, `mpi4py`)**: every rank runs the same script; you write
-  the messages. Coupled simulations, halos, custom communication.
-- **Task scheduling (Dask, job arrays)**: independent tasks, results collected.
-  Parameter sweeps, files, folds; data larger than one machine.
+- **Comunicación por mensajes (MPI, `mpi4py`)**: cada rango ejecuta el mismo script; escribiste las mensajería. Simulaciones enlazadas, halos, comunicación personalizada.
+- **Administración de tareas (Dask, arrays de tareas)**: tareas independientes, resultados recopilados.
+  Sweep de parámetros, archivos, faldas; datos más grandes que una máquina.
 
-The Python code is the same for 2 workers and 2000.
+El código de Python es el mismo para 2 trabajadores y 2000.
 
 ---
 
-# The decision table
+# Tabla de decisiones
 
-| You have | Reach for |
+| Tienes | Llama a |
 |---|---|
-| Loop over array elements | NumPy first, then Numba `@njit` |
-| Same loop, several cores | Numba `parallel=True` + `prange`, threads <= cores |
-| Millions of identical, independent element operations | CuPy, data kept on the device |
-| Many independent Python tasks | processes, `joblib`, Dask |
-| Independent tasks across machines | task scheduler (Dask, job array) |
-| Coupled simulation across machines | `mpi4py` (+ Numba or CuPy per rank) |
-| Any performance claim | measure before and after, same runtime |
+| Recorres los elementos de un array | NumPy primero, luego Numba `@njit` |
+| El mismo bucle, varios núcleos | Numba `parallel=True` + `prange`, hilos <= núcleos |
+| Millones de operaciones de elementos idénticos e independientes | CuPy, datos mantenidos en el dispositivo |
+| Muchas tareas independientes Python | procesos, `joblib`, Dask |
+| Tareas independientes entre máquinas | administrador de tareas (Dask, arrays de tareas) |
+| Simulación enlazada entre máquinas | `mpi4py` (+ Numba o CuPy por rango) |
+| Cualquier afirmación de rendimiento | medir antes y después, mismo tiempo de ejecución |
 
 ---
 
-# When more hardware does not help
+# Cuando más hardware no ayuda
 
-- The workload is too small: launch or thread start-up dominates.
-- Data crosses the PCIe link every iteration.
-- The kernel is memory-bound and the bus is already saturated.
-- A serial fraction caps the speedup (Amdahl).
-- The decomposition is communication-bound (`2P/n` large, latency dominates).
+- El trabajo de carga es demasiado pequeño: el lanzamiento o el inicio de hilos domina.
+- Los datos cruzan la link de PCIe en cada iteración.
+- El kernel está limitado por la memoria y la pista ya está saturada.
+- Una fracción serial establece el aceleramiento (Amdahl).
+- La descomposición está limitada por la comunicación (`2P/n` grande, la latencia domina).
 
-Find out which one **before** asking for more machines.
+Encuentra qué uno **antes** de pedir más máquinas.

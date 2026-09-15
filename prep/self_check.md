@@ -1,89 +1,90 @@
 # Self-check (5 to 10 minutes)
 
-Answer each question before opening its explanation. Getting one wrong is
-fine; read the explanation and move on. Together these cover what the first
-ten live minutes assume.
+Responde a cada pregunta antes de abrir su explicación. Tener una respuesta incorrecta es
+perfectamente normal; lee la explicación y continúa. Estas preguntas cubren lo que asumen los
+primeros diez minutos de vida.
 
-## 1. Slicing
+## 1. Cortado
 
-`u` is a 6x6 array. Which expression has the same shape as `u[1:-1, 1:-1]`
-and selects, for each interior cell, the cell to its **left**?
+`u` es un array de 6x6. ¿Cuál expresión tiene la misma forma que `u[1:-1, 1:-1]`
+y selecciona, para cada celda interior, la celda a su **izquierda**?
 
 (a) `u[1:-1, 2:]`  (b) `u[1:-1, :-2]`  (c) `u[:-2, 1:-1]`  (d) `u[:, :-2]`
 
-<details><summary>Answer</summary>
+<details><summary>Respuesta</summary>
 
-**(b).** Keep the rows the same (`1:-1`) and shift the columns one to the left:
-`:-2` selects columns 0 to 3, which are the left neighbours of columns 1 to 4.
-(a) is the right neighbour, (c) the one above, (d) has 6 rows and so cannot be
-added to the 4x4 interior.
+**(b).** Mantén las filas la misma (`1:-1`) y mueve las columnas una unidad a la izquierda:
+`:-2` selecciona columnas 0 a 3, que son los vecinos izquierdos de las columnas 1 a 4.
+(a) es el vecino derecho, (c) el uno encima, (d) tiene 6 filas y por tanto no puede ser
+agregado a la 4x4 interior.
 </details>
 
-## 2. Boundary preservation
+## 2. Preservación de la frontera
 
-In the stencil, `unew[1:-1, 1:-1] = 0.25 * (...)` updates only the interior.
-After 100 steps, what is the value of the top row `u[0, :]`?
+En el stencil, `unew[1:-1, 1:-1] = 0.25 * (...)` actualiza solo el interior.
+Después de 100 pasos, ¿qué valor tiene la fila superior `u[0, :]`?
 
-(a) It has cooled toward the average  (b) Still 100 everywhere  (c) 25  (d) Undefined
+(a) Ha enfriado hacia el promedio  (b) Todavía 100 en todas partes  (c) 25  (d) Indefinido
 
-<details><summary>Answer</summary>
+<details><summary>Respuesta</summary>
 
-**(b).** The top row is never written, so it stays at 100. It is the boundary
-condition, the "hot edge" that drives the whole simulation. The same is true
-of the other three edges, which stay at 0. Every faster implementation must
-preserve this, and the notebooks check it explicitly.
+**(b).** La fila superior nunca se escribe, así que permanece en 100. Es la condición
+de frontera, la "borde caliente" que impulsa toda la simulación. Lo mismo es cierto
+de los otros tres bordes, que permanecen en 0. Cualquier implementación más rápida
+debe preservar esto, y los cuadernos lo comproban explícitamente.
 </details>
 
-## 3. Speedup
+## 3. Aceleración
 
-Version A takes 8.0 s. Version B takes 0.5 s on the same machine. A colleague
-runs version B on a faster laptop in 0.2 s. What is the speedup of B over A?
+Versión A tarda 8.0 s. Versión B tarda 0.5 s en la misma máquina. Un colega
+ejecuta versión B en un portátil más rápido en 0.2 s. ¿Cuál es la aceleración de B sobre A?
 
-(a) 40x  (b) 16x  (c) 2.5x  (d) Cannot say without more information
+(a) 40x  (b) 16x  (c) 2.5x  (d) No se puede decir sin más información
 
-<details><summary>Answer</summary>
+<details><summary>Respuesta</summary>
 
-**(b).** 8.0 / 0.5 = 16, measured on the same machine. The laptop number is a
-different experiment: different hardware, so it cannot be compared with A. In
-the workshop every comparison is made within one runtime.
+**(b).** 8.0 / 0.5 = 16, medida en la misma máquina. El número de portátil es un
+experimento diferente: hardware diferente, así que no puede compararse con A. En
+la oficina de trabajo cada comparación se hace dentro de un solo runtime.
 </details>
 
-## 4. Separate device memory
+## 4. Memoria separada del dispositivo
 
-`x` is a NumPy array in RAM. Which statement about a GPU computation on it
-is true?
+`x` es un array de NumPy en RAM. ¿Qué declaración sobre una computación en GPU sobre él
+es verdadera?
 
-(a) The GPU reads `x` from RAM directly, so no copy is needed
-(b) `x` must be copied to GPU memory first; the result must be copied back to be used in NumPy
-(c) Copies are so fast they never matter
-(d) CuPy arrays and NumPy arrays share memory
+(a) El GPU lee `x` directamente de RAM, así que no es necesario hacer una copia
+(b) `x` debe ser copiado a la memoria del GPU primero; el resultado debe ser copiado de vuelta para ser usado en NumPy
+(c) Las copias son tan rápidas que nunca importan
+(d) Las arrays de CuPy y arrays de NumPy comparten memoria
 
-<details><summary>Answer</summary>
+<details><summary>Respuesta</summary>
 
-**(b).** The GPU has its own memory. `cp.asarray(x)` copies up; `.get()`
-copies down. The copies go over a link far slower than either memory, so a
-loop that copies every iteration can be slower than not using the GPU at all.
+**(b).** El GPU tiene su propia memoria. `cp.asarray(x)` copia hacia arriba; `.get()`
+copia hacia abajo. Las copias pasan a través de un enlace que es mucho más lento que
+ambas memorias, así que un bucle que copia cada iteración puede ser más lento que no usar
+el GPU en absoluto.
 </details>
 
-## 5. Timing scope
+## 5. Ámbito de medición de tiempo
 
-You want to time 20 stencil steps on the GPU. Which procedure is right?
+¿Quién quiere medir 20 pasos de stencil en el GPU? ¿Cuál procedimiento es correcto?
 
-(a) Start the clock, run 20 steps, stop the clock
-(b) Run 20 steps once to warm up; then start the clock, run 20 steps, stop the clock
-(c) Run 20 steps once to warm up; synchronise; start the clock, run 20 steps, synchronise, stop the clock; repeat a few times and report the minimum or median
-(d) Time one step and multiply by 20
+(a) Empieza el cronómetro, ejecuta 20 pasos, detiene el cronómetro
+(b) Ejecuta 20 pasos una vez para calentar; luego empieza el cronómetro, ejecuta 20 pasos, detiene el cronómetro
+(c) Ejecuta 20 pasos una vez para calentar; sincroniza; empieza el cronómetro, ejecuta 20 pasos, sincroniza, detiene el cronómetro; repite varias veces y reporta el mínimo o mediana
+(d) Tiempo un paso y multiplica por 20
 
-<details><summary>Answer</summary>
+<details><summary>Respuesta</summary>
 
-**(c).** Warm-up removes compilation and allocation from the measurement.
-Synchronising before stopping the clock is essential on a GPU, because the
-calls return before the work is done; without it you time the *launch*.
-Repeats show the spread. (d) misses the fact that the first step is not
-representative and that per-step overhead can dominate at small sizes.
+**(c).** Calentar elimina la compilación y la asignación de la medición.
+Sincronizar antes de detener el cronómetro es esencial en un GPU, porque las llamadas
+devuelven antes de que el trabajo esté hecho; sin él, tiempo la *lanzamiento*.
+Las repeticiones muestran la dispersión. (d) omite el hecho de que el primer paso no
+es representativo y que el overhead por paso puede dominar a pequeños tamaños.
 </details>
 
-## One more, for the discussion at the end of the workshop
+## Una más, para la discusión al final de la oficina de trabajo
 
-When would buying more hardware **not** make a program faster? Think of two
-reasons. (You will meet at least three during the live session.)
+¿Cuándo comprar más hardware **no** hará que un programa sea más rápido? Piensa en dos
+razones. (¡Tendrás que enfrentarte a al menos tres durante la sesión en vivo.)

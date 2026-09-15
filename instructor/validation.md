@@ -1,94 +1,97 @@
-# Validation and release gates
+# Validación y pasos de lanzamiento
 
-Two kinds of checks. `tools/validate.sh` is automatic and runs on an author
-machine; it regenerates every `.ipynb` from its `.py` source and executes the
-core notebooks headless in CPU-fallback mode and, if an NVIDIA GPU is present,
-in GPU mode. The manual checks below run in Google Colab and cannot be
-scripted, because Colab hardware, quotas and package images change.
+Dos tipos de comprobaciones. `tools/validate.sh` es automático y se ejecuta en un
+máquina del autor; regenera cada `.ipynb` a partir de su fuente `.py` y ejecuta los
+carnes de caja en modo CPU-fallback y, si está presente una tarjeta gráfica NVIDIA,
+en modo GPU. Las comprobaciones manuales siguientes se ejecutan en Google Colab y no
+pueden ser scripteadas, porque el hardware, las quotas y las imágenes de paquetes de
+Colab cambian.
 
-## Automatic (author machine)
+## Comprobaciones automáticas (máquina del autor)
 
 ```bash
-uv sync --project env --extra gpu       # once; drop --extra gpu without a GPU
-GPU_EXTRA=1 tools/validate.sh            # regenerates notebooks, executes core set
-uv run --project env python tools/dump_outputs.py validation/gpu/02_gpu.ipynb   # eyeball outputs
+uv sync --project env --extra gpu       # una vez; sin --extra gpu sin una tarjeta GPU
+GPU_EXTRA=1 tools/validate.sh            # regenera los cajones de caja, ejecuta el conjunto de cajones crítico
+uv run --project env python tools/dump_outputs.py validation/gpu/02_gpu.ipynb   # revisa los resultados
 ```
 
-Passing means: every core notebook (00a, 00b and its solution, 01, 02, 03, 04)
-runs to the end without an error in both modes, and `git status` shows no
-unexpected `.ipynb` change (source and notebook in sync). Executed copies land
-in `validation/`, which is ignored by git. The extensions are regenerated but
-not executed; run them by hand with `EXTRA_NOTEBOOKS="extensions/ext_gil_and_task_pools.ipynb"`.
+El paso significa: cada caja de caja crítica (00a, 00b y su solución, 01, 02, 03, 04)
+termina sin error en ambos modos y `git status` muestra ningún cambio inesperado en
+`.ipynb` (fuente y caja de caja sincronizados). Las extensiones se regeneran pero no se
+ejecutan; ejecútalas por mano con `EXTRA_NOTEBOOKS="extensions/ext_gil_and_task_pools.ipynb"`.
 
-Last automatic run on the author machine: 13 September 2026, 14 of 14
-executions passed (32-core CPU, RTX 4090, numpy 2.5.3, numba 0.67.0,
+La última comprobación automática en la máquina del autor: 13 de septiembre de 2026, 14 de 14
+comprobaciones pasaron (CPU de 32 núcleos, RTX 4090, numpy 2.5.3, numba 0.67.0,
 cupy 14.2.0, Python 3.12.14).
 
-## Manual Colab checks
+## Comprobaciones manuales en Google Colab
 
-Do these with a **student-level Google account**, not the author's, from the
-links in the README. Record date, runtime type, GPU model (if any) and the
-package versions printed by each setup cell.
+Realiza estas con una **cuenta de estudiante de Google**, no la del autor, desde
+las enlaces en el README. Registra la fecha, el tipo de ejecución de la máquina, el
+modelo de tarjeta gráfica (si hay) y las versiones de paquete impresas por cada
+celda de configuración.
 
-### Fresh CPU runtime
+### Entorno de ejecución de CPU fresco
 
-1. Open `00_colab_ready` from the README link. Save a copy. Run all. Last cell
-   says `READY for the workshop`. Restart session, Run all: still READY.
-   Disconnect and delete runtime, Run all: packages reinstall, still READY.
-   Note how long the install took.
-2. Open `00_stencil_practice`. Run all: the check prints `FAIL` with the hint
-   (placeholder still present). Fix the slice, rerun: `PASS`.
-3. Open `01_measure_and_multicore`. Run all. Note the thread counts tested and
-   whether the recorded sweep was loaded. Every cell under 30 s. Total
-   computation under 5 minutes.
-4. Open `02_gpu` on the **CPU** runtime. Run all. Banner says CPU fallback;
-   the `RECORDED GPU RUN` line shows the intended metadata (after gate 4, a
-   Colab GPU); plot shows live CPU and recorded GPU curves.
-5. Open `03_parallel_models` and `04_capstone`. Run all. Capstone GPU rows
-   absent, everything else complete.
+1. Abre `00_colab_ready` desde el enlace del README. Guarda una copia. Ejecuta todo.
+   La última celda dice `READY para el workshop`. Reinicia la sesión, Ejecuta todo:
+   sigue `READY`. Desconecta y borra la ejecución, Ejecuta todo: las paquetes se
+   reinstalan, sigue `READY`. Nota el tiempo que tardó la instalación.
+2. Abre `00_stencil_practice`. Ejecuta todo: la celda de comprobación imprime `FAIL`
+   con el consejo (el placeholder aún presente). Corrige el corte, vuelve a ejecutar:
+   `PASS`.
+3. Abre `01_measure_and_multicore`. Ejecuta todo. Nota los contadores de hilos
+   probados y si el recorrido registrado se cargó. Cada celda bajo los 30 segundos.
+   Total de cálculo bajo los 5 minutos.
+4. Abre `02_gpu` en el **entorno de ejecución de CPU**. Ejecuta todo. El banner dice
+   `CPU fallback`; la línea `RECORDED GPU RUN` muestra el metadata intencionado (después
+   de la puerta 4, una tarjeta GPU de Colab); la gráfica muestra las curvas CPU y
+   recorridas en vivo.
+5. Abre `03_parallel_models` y `04_capstone`. Ejecuta todo. Las filas de GPU de
+   `capstone` están ausentes, todo lo demás está completo.
 
-### GPU runtime
+### Entorno de ejecución de GPU
 
-6. Change runtime type to GPU. Open `02_gpu`. Run all. Banner says `MODE: GPU`
-   with the device name. CuPy imported without installing (note if pip ran).
-   The sync/no-sync cell shows the expected difference. All cells under 30 s.
-7. Open `04_capstone` on the same runtime. Run all. Four candidates, both
-   CuPy scopes present.
-8. Download `timings_01_cpu.csv` (from the CPU run) and `timings_02_gpu.csv`
-   (from this run). Copy into `data/reference_timings/` as `01_threads.csv`
-   and `02_gpu.csv`. Commit and push. Repeat check 4 and confirm the recorded
-   metadata now names Colab and the GPU.
-9. Optional extensions on the GPU runtime: `ext_cuda_kernel` (does
-   `numba-cuda` install and run?), `ext_gil_and_task_pools` (CPU or GPU).
-   Either failing means the README keeps calling them optional and the
-   run-of-show does not mention them beyond "available".
+6. Cambia el tipo de ejecución a GPU. Abre `02_gpu`. Ejecuta todo. El banner dice
+   `MODE: GPU` con el nombre del dispositivo. CuPy importa sin instalar (nota si pip
+   corrió). La celda de sincronización/no-sincronización muestra la diferencia esperada.
+   Todas las celdas bajo los 30 segundos.
+7. Abre `04_capstone` en la misma ejecución. Ejecuta todo. Cuatro candidatos, ambas
+   celdas de CuPy están presentes.
+8. Descarga `timings_01_cpu.csv` (del entorno de ejecución de CPU) y `timings_02_gpu.csv`
+   (de esta ejecución). Copia en `data/reference_timings/` como `01_threads.csv` y
+   `02_gpu.csv`. Comitea y pusha. Repite la comprobación 4 y confirma que el metadata
+   recorrido ahora nombró Colab y la tarjeta GPU.
+9. Opcionalmente las extensiones en el entorno de ejecución de GPU: `ext_cuda_kernel`
+   (instala y ejecuta `numba-cuda`?), `ext_gil_and_task_pools` (CPU o GPU). Si alguna
+   falla, el README sigue llamándolas opcionales y el show de show no menciona nada más que
+   "disponible".
 
-### Time budget check (rehearsal, gate 5)
+### Comprobación de presupuesto de tiempo (rehechura, puerta 5)
 
-Run the full agenda with a clock, including the runtime switch at 01:20 and
-the student exercise time. Record actual minute marks in this file. Confirm
-both cuts are still enough to recover 10 minutes.
+Ejecuta el programa completo con una reloj, incluyendo el cambio de entorno a 01:20 y el
+tiempo del ejercicio del estudiante. Registra los marcos de tiempo reales en este archivo.
+Confirma que ambos cortes aún son suficientes para recuperar 10 minutos.
 
-## Release gates
+## Pasos de lanzamiento
 
-| Gate | When | Passes when |
+| Puerta | Cuando | Pasa cuando |
 |---|---|---|
-| 1 Scope and structure | done | agenda sums to 180 min; notebooks named; README is the landing page |
-| 2 Colab execution reliable | done on author machine; Colab pending | automatic run passes both modes; no active student path needs a cluster |
-| 3 Learning sequence | done | primer, practice, self-check, checkpoints, capstone, solutions exist |
-| 4 Validate preparation | T-7 days | manual checks 1 to 8 pass; reference CSVs replaced by Colab data; every Colab link opens with a student account |
-| 5 Rehearse | T-2 days | timed rehearsal within budget; slides, notes and recording complete; reminder sent by organisers |
-| 6 Final check | T-1 day | checks 1, 4 and 6 repeated; tested revision and versions recorded below |
+| 1 Especie y estructura | hecho | la agenda suma 180 minutos; los cajones están nombrados; el README es la página de llegada |
+| 2 Ejecución de Colab fiable | hecho en la máquina del autor; Colab pendiente | la comprobación automática pasa en ambos modos; no hay ruta estudiantil activa que necesite un cluster |
+| 3 Secuencia de aprendizaje | hecho | el primer plano, la práctica, el auto-comprobación, los puntos de control, el capstone y las soluciones existen |
+| 4 Preparación de la comprobación | T-7 días | las comprobaciones 1 a 8 pasan; los archivos CSV de referencia se reemplazan por los datos de Colab; cada enlace de Colab abre con una cuenta estudiante |
+| 5 Rehechura | T-2 días | la comprobación de rehechura dentro del presupuesto; las diapositivas, las notas y la grabación están completas; se envía un recordatorio por parte de los organizadores |
+| 6 Comprobación final | T-1 día | las comprobaciones 1, 4 y 6 se repiten; se prueba la revisión y se registran las versiones |
 
-Tested revision for the event: *(fill in: git commit, date, Colab runtime
-versions, GPU model)*.
+Revisión probada para el evento: *(reemplaza: git commit, fecha, versiones de la ejecución de Colab, modelo de tarjeta GPU)*.
 
-## Known gaps at the time of writing
+## Gaps conocidos al momento de escribir
 
-- `data/reference_timings/*.csv` are from the author's workstation, not Colab
-  (labelled as such in their metadata). Gate 4 replaces them.
-- The GPU demonstration recording has not been produced.
-- The extension notebooks have not been executed in Colab; `ext_cuda_kernel`
-  depends on the `numba-cuda` package installing on the Colab image.
-- Timings in the run-of-show ("typical Colab result") are expectations, to be
-  corrected from the Colab runs.
+- `data/reference_timings/*.csv` provienen de la máquina del autor, no de Colab
+  (se les etiquetó como tales en su metadata). La puerta 4 los reemplaza.
+- No se ha producido la grabación de la demostración de GPU.
+- Las celdas de extensión no se ejecutaron en Colab; `ext_cuda_kernel` depende de que
+  el paquete `numba-cuda` se instale en la imagen de Colab.
+- Las mediciones en el show de show ("resultado típico de Colab") son expectativas que
+  deben corregirse a partir de las mediciones de Colab.

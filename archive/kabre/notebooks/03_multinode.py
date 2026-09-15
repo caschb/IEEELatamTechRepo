@@ -1,20 +1,14 @@
 # %% [markdown]
-# # 3. Beyond one node
+# # 3. Más allá de un nodo
 #
-# Topic 7. One node has tens of cores, one GPU and a few hundred GB. When that is
-# not enough, the cluster has more nodes, and nothing about Python changes
-# except one fact: **nodes do not share memory**. Every byte that another node
-# needs has to be sent over the network.
+# ## 7. Un nodo tiene decenas de núcleos, una GPU y unas cuantas cientos de GB. Cuando eso no es suficiente, el cluster tiene más nodos, y nada cambia en Python excepto una cosa: **los nodos no comparten memoria**. Cada byte que otro nodo necesita tiene que ser enviado por el rednece.
 #
-# Two ways to program that:
+# Dos formas de programar eso:
 #
-# - **MPI** (`mpi4py`): explicit messages. Fastest, most control, most code.
-#   The lingua franca of HPC; every simulation code speaks it.
-# - **Dask**: a scheduler farms tasks to workers on other nodes. Little code,
-#   great for embarrassingly parallel work and for data larger than one node.
+# - **MPI** (`mpi4py`): mensajes explícitos. Más rápido, más control, más código. La lengua franca de la HPC; cada código de simulación habla de ella.
+# - **Dask**: un agente de programación que distribuye tareas a los hilos en otros nodos. Poca código, excelente para tareas paralelas y para datos más grandes que un nodo.
 #
-# Both need SLURM to give us the nodes. This notebook runs on one node; the
-# jobs it submits run on others.
+# Ambos necesitan SLURM para darte los nodos. Este cuaderno corre en un solo nodo; los trabajos que envía corren en otros.
 
 # %%
 import os, subprocess, time, textwrap
@@ -42,10 +36,9 @@ def submit(script, *args, **sbatch_opts):
     return (WORK / f"slurm-{out.stdout.strip()}.out").read_text()
 
 # %% [markdown]
-# ## 3.1 MPI in ten lines
+# ## 3.1 MPI en diez líneas
 #
-# Every rank runs the same script. `comm.rank` tells it who it is. Collective
-# operations (`reduce`, `bcast`, `scatter`, `gather`) do the communication.
+# Cada rango ejecuta el mismo script. `comm.rank` le dice quién es. Operaciones colectivas (`reduce`, `bcast`, `scatter`, `gather`) hacen la comunicación.
 
 # %%
 _ = (WORK / "hello.py").write_text(textwrap.dedent('''
@@ -77,20 +70,13 @@ _ = (WORK / "mpi.sbatch").write_text(textwrap.dedent(f'''
 print(submit("mpi.sbatch", "hello.py", nodes=2, ntasks_per_node=4))
 
 # %% [markdown]
-# Eight ranks, two hostnames. The `sbatch` line is the whole "how do I use more
-# nodes" story: `--nodes` and `--ntasks-per-node` decide, `mpirun` reads the
-# allocation, the script is unchanged.
+# Eight ranks, dos nombres de host. La línea `sbatch` es toda la historia de "¿Cómo utilizo más nodos": `--nodes` y `--ntasks-per-node` deciden, `mpirun` lee la asignación, el script no cambia.
 #
-# Rules from the cluster notes worth repeating: launch with `mpirun` and the
-# `orte_keep_fqdn_hostnames` flag on Kabré, not `srun --mpi=pmi2`; ranks come
-# from `--ntasks`, threads from `--cpus-per-task`.
+# Reglas del cluster que valen la pena repetir: inicia con `mpirun` y la bandera `orte_keep_fqdn_hostnames` en Kabré, no `srun --mpi=pmi2`; los ramos vienen de `--ntasks`, los hilos de `--cpus-per-task`.
 #
-# ## 3.2 The stencil across nodes: domain decomposition
+# ## 3.2 El stencil a lo largo de los nodos: descomposición del dominio
 #
-# Split the grid into horizontal strips, one per rank. Each step, a strip needs
-# the row just above and just below it, which belong to its neighbours. Those are
-# **halo** (ghost) rows, exchanged every iteration. Everything else is the Numba
-# stencil from session 1, unchanged.
+# Divide el grid en filas horizontales, una por rama. Cada paso, una fila necesita la fila justo arriba y justo debajo, que pertenece a sus vecinos. Estas son **filas de halo** (huesos) que se intercambian en cada iteración. Todo lo demás es el stencil de Numba de la sesión 1, sin cambios.
 
 # %%
 _ = (WORK / "stencil_mpi.py").write_text(textwrap.dedent('''
@@ -144,20 +130,19 @@ for nodes, per_node in ((1, 1), (1, 4), (2, 4), (4, 4)):
     print(f"{nodes} node(s) x {per_node} ranks x 5 threads: {out.strip()}")
 
 # %% [markdown]
-# Hybrid parallelism: MPI between nodes, Numba threads within a rank. `total heat`
-# is the correctness check: it must not change with the rank count.
+# Hybrid paralelismo: MPI entre nodos, hilos de Numba dentro de un rango. `total heat`
+# es el chequeo de correctitud: debe no cambiar con el número de rango.
 #
-# Why not perfect scaling? Each rank exchanges two rows per step. That is tiny
-# compared with the strip, so this problem scales well. Problems that need
-# all-to-all communication (FFTs, dense linear algebra) do not, and there the
-# network decides. Measure the fraction of time in communication before buying
-# more nodes.
+# ¿Por qué no hay escala perfecta? Cada rango intercambia dos filas por paso. Eso es muy pequeño
+# compared with la banda, por lo que este problema escala bien. Los problemas que requieren
+# comunicación all-to-all (FFTs, álgebra lineal densa) no lo hacen, y en esos casos
+# la red decide. Medir la fracción de tiempo en comunicación antes de comprar más nodos.
 #
-# ## 3.3 Dask on many nodes, from the notebook
+# ## 3.3 Dask en muchos nodos, desde la notebook
 #
-# For independent tasks, MPI is overkill. `dask-jobqueue` asks SLURM for worker
-# jobs and connects them to a scheduler running here, in the kernel. The code
-# you wrote against `LocalCluster` in session 1 runs unchanged.
+# Para tareas independientes, el MPI es excesivo. `dask-jobqueue` pide a SLURM trabajadores de
+# tareas y los conecta a un agente que corre aquí, en el kernel. El código que escribiste contra `LocalCluster`
+# en la sesión 1 no cambia.
 
 # %%
 from dask.distributed import Client
@@ -204,27 +189,24 @@ results[:3]
 client.close(); cluster.close()
 
 # %% [markdown]
-# Adaptive mode (`cluster.adapt(minimum_jobs=0, maximum_jobs=8)`) lets Dask
-# request and release nodes as the task graph demands. That is the cluster
-# equivalent of "scale to zero".
+# Adaptive mode (`cluster.adapt(minimum_jobs=0, maximum_jobs=8)`) permite que Dask
+# reclame y libere nodos según lo que demanda el gráfico de tareas. Ese es el equivalente
+# del cluster al "escalar a cero".
 #
-# ## 3.4 Which one?
+# ## 3.4 ¿Cuál es el caso?
 #
-# | You have | Use |
+# | Tienes | Usa |
 # |---|---|
-# | Independent tasks (sweeps, files, folds) | Dask (`dask-jobqueue`) or a SLURM job array |
-# | One big array or dataframe that does not fit in RAM | `dask.array` / `dask.dataframe` on `SLURMCluster` |
-# | Tightly coupled simulation, halo exchange, custom communication | `mpi4py` + Numba |
-# | Deep learning across GPUs | PyTorch DDP, which uses NCCL, the GPU cousin of MPI |
+# | Tareas independientes (sweeps, archivos, folds) | Dask (`dask-jobqueue`) o un array de tareas SLURM |
+# | Un gran array o dataframe que no cabe en la RAM | `dask.array` / `dask.dataframe` en `SLURMCluster` |
+# | Simulaciones fuertemente acopladas, intercambio de halo, comunicación personalizada | `mpi4py` + Numba |
+# | Deep Learning en GPUs | PyTorch DDP, que utiliza NCCL, el hermano de MPI del GPU |
 #
-# ## Takeaways for the whole afternoon
+# ## Conclusión para toda la tarde
 #
-# 1. Measure first. Profile, then optimise the line that matters.
-# 2. Vectorise, then compile (Numba). Ten to a hundred times, no parallelism yet.
-# 3. Threads for compiled or I/O code, processes for Python code, `prange` for loops.
-# 4. GPU: same NumPy code with CuPy; batch the work; move data once; synchronise
-#    before timing; know your float64 rate.
-# 5. Multi-node: MPI for coupled work, Dask for independent work. SLURM hands out the
-#    nodes either way.
-# 6. Keep the environment reproducible (`uv`, a lockfile), so the number you got
-#    today is the number you get next month.
+# 1. Medir primero. Profilera, luego optimiza la línea que importa.
+# 2. Vectoriza, luego compila (Numba). Diez a cien veces, sin paralelismo aún.
+# 3. Hilo para el código compilado o de I/O, proceso para el código Python, `prange` para los bucles.
+# 4. GPU: el mismo código NumPy con CuPy; agrupa el trabajo; mueve el dato una vez; sincroniza antes de medir; conoce tu tasa de float64.
+# 5. Multi-nodo: MPI para el trabajo fuertemente acoplado, Dask para el trabajo independiente. SLURM distribuye los nodos de la misma manera.
+# 6. Mantén el entorno reproducible (`uv`, un fichero de bloqueo), así el número que obtuviste hoy es el mismo que obtendrás el próximo mes.

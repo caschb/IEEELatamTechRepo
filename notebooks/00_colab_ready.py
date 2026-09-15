@@ -1,40 +1,41 @@
 # %% [markdown]
-# # 0a. Is my Colab ready? (preparation, 10 to 15 minutes)
+# # 0a. ¿Está mi Colab listo? (preparación, 10 a 15 minutos)
 #
-# Goal: before the workshop, make sure you can open, run, edit and save a
-# notebook in Google Colab, and that the packages the course needs install on a
-# **standard CPU runtime**. You do **not** need a GPU for this. A completed CPU
-# check is all the preparation requires.
+# Objetivo: Antes del workshop, asegúrate de poder abrir, ejecutar, editar y guardar
+# un cuaderno en Google Colab, y que las paquetes que el curso necesita instalen en
+# un **runtime estándar CPU**. No necesitas una GPU para esto. Un chequeo completo de
+# la CPU es todo lo que se requiere para la preparación.
 #
-# ## Step 1: make your own copy
+# ## Paso 1: haz tu propia copia
 #
-# Colab opened this notebook read-only from GitHub. Choose **File > Save a copy
-# in Drive** so your edits and outputs are kept. Work in the copy from now on.
+# El Colab abrió este cuaderno de forma sololectiva desde GitHub. Haz clic en el cuadro
+# abajo y presiona **Archivo > Guardar una copia en Drive** para que tus ediciones y
+# salidas se mantengan. Trabaja con la copia desde ahora.
 #
-# ## Step 2: run a cell
+# ## Paso 2: ejecuta un cuadro
 #
-# Click the cell below and press **Shift+Enter** (or the play button).
+# Haz clic en el cuadro debajo y presiona **Shift+Enter** (o el botón de reproducción).
 
 # %%
 print("Hello from Colab. This cell ran.")
 
 # %% [markdown]
-# ## Step 3: edit a cell
+# ## Paso 3: editar una celda
 #
-# Change the number in the next cell to your favourite one, then run it. The
-# check on the second line should say `PASS`.
+# Cambia el número en el siguiente celda a tu número favorito, luego ejecútala. El
+# check en la línea segunda debería decir `PASS`.
 
 # %%
 favourite = 7            # <- change this
 print("PASS: you edited and ran a cell" if favourite != 7 else "not yet: change the number and run again")
 
 # %% [markdown]
-# ## Step 4: install what the course needs
+# ## Step 4: instalar lo que necesita el curso
 #
-# Every course notebook starts with a setup cell like this one. It imports each
-# package and installs it with pip **only if the import fails**, so on a standard
-# Colab runtime it is usually quick. You must run it again whenever the runtime
-# restarts, because a fresh runtime has none of your installs.
+# Cada cuaderno de notebook de curso comienza con una celda de configuración como esta. Importa cada
+# paquete y lo instala con pip **sólo si la importación falla**, así que en una
+# runtime estándar de Colab, generalmente es rápido. Deberás ejecutarla de nuevo cada vez que la
+# runtime se reinicie, porque una runtime nueva no tiene ninguna de tus instalaciones.
 
 # %%
 import importlib, importlib.util, os, platform, subprocess, sys
@@ -54,10 +55,9 @@ ensure("line_profiler")
 print("all packages import")
 
 # %% [markdown]
-# ## Step 5: look at the machine you were given
+# ## Step 5: revisa la máquina que te dieron
 #
-# Colab hands out different virtual machines at different times. Knowing what you
-# have is part of measuring honestly.
+# Colab te entrega diferentes máquinas virtuales en diferentes momentos. Saber lo que tienes es parte de medir de manera honesta.
 
 # %%
 IN_COLAB = "COLAB_RELEASE_TAG" in os.environ or "google.colab" in sys.modules
@@ -69,10 +69,9 @@ print("Numba thread cap ", numba.config.NUMBA_NUM_THREADS)
 print("RAM              ", round(psutil.virtual_memory().total / 2**30, 1), "GB")
 
 # %% [markdown]
-# ## Step 6: a tiny compiled function
+# ## Step 6: una función compilada muy pequeña
 #
-# This checks that Numba can compile on this runtime. The first call takes a
-# second or two (compilation); the second is fast.
+# Este verifica que Numba puede compilar en este entorno de ejecución. La primera llamada tarda unos segundos (compilación); la segunda es rápida.
 
 # %%
 import time
@@ -92,19 +91,19 @@ assert np.isclose(r1, (x * x).sum())
 print(f"first call (compiles): {t_first*1e3:7.1f} ms   second call: {t_second*1e3:6.1f} ms   PASS")
 
 # %% [markdown]
-# ## Step 7: restart and rerun
+# ## Paso 7: reiniciar y volver a ejecutar
 #
-# Choose **Runtime > Restart session**, then **Runtime > Run all**. Everything
-# above should pass again without you doing anything else. This is exactly what
-# you will do during the workshop if a runtime disconnects.
+# Elige **Runtime > Reiniciar sesión**, luego **Runtime > Ejecutar todo**. Todo
+# lo que está arriba debería pasar de nuevo sin que hagas nada más. Eso es exactamente
+# lo que harás durante el taller si se desconecta un runtime.
 #
-# If instead you choose **Runtime > Disconnect and delete runtime**, the next
-# run will need to install packages again. That is expected.
+# Si en cambio elige **Runtime > Desconectar y eliminar runtime**, la próxima ejecución
+# tendrá que instalar de nuevo los paquetes. Eso es esperado.
 #
-# ## Step 8: your status report
+# ## Paso 8: informe de estado
 #
-# Run the cell below and keep its output. If something failed, paste it where
-# the preparation README tells you to report problems.
+# Ejecuta la celda debajo y mantén su salida. Si algo falló, péguela donde el README de
+# preparación te indique cómo reportar problemas.
 
 # %%
 report = {
@@ -117,4 +116,4 @@ print("STATUS " + " ".join(f"{k}={v}" for k, v in report.items()))
 print("READY for the workshop" if report["numba_compiles"] else "NOT READY: see the error above")
 
 # %% [markdown]
-# **Done.** Save the notebook (Ctrl+S). Next: `00_stencil_practice`.
+# **Done.** Guarda el cuaderno (Ctrl+S). Siguiente: `00_stencil_practice`.
