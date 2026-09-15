@@ -7,7 +7,9 @@ Notebook 03 enseña los conceptos con un modelo de NumPy dentro de un solo entor
 - Conceptos que deben estar claros desde el Notebook 03: rangos, `comm.rank` y `comm.size`, comunicación punto a punto (`Sendrecv`) versus colectiva (`reduce`, `bcast`, `gather`), halos, y la relación de comunicación a procesamiento de `2P/n`.
 - El tutorial de mpi4py (https://mpi4py.readthedocs.io/en/stable/tutorial.html) cubre exactamente las llamadas de `Sendrecv` y `reduce` mostradas en el apartado 3.4. Lee "Punto a Punto" y "Colectiva" y nota la diferencia entre los métodos en minúsculas (objetos pickled) y mayúsculas (buffers, arrays NumPy). El stencil utiliza los métodos en mayúsculas.
 - Para probarlo en un portátil: `pip install mpi4py` necesita una biblioteca MPI (en Linux `apt install libopenmpi-dev`, en macOS `brew install open-mpi`); luego `mpirun -np 4 python stencil_mpi.py`. Cuatro rangos en un portátil ya muestran el argumento de correctitud (calor total independiente del número de rangos), pero no la velocidad.
-- En un cluster, el lanzamiento es un script de trabajo; la documentación del cluster decide el lanzador y las banderas. La edición anterior de este curso, en `archive/kabre/`, muestra uno de esos setups y sus fallos.
+- En un clúster, el lanzamiento se define mediante un script de trabajo. La
+  documentación de cada sistema determina el lanzador, las opciones y los módulos
+  disponibles.
 - Paralelismo híbrido: una hilera de Numba por rangos, tamaño a las hilas que el rangos recibió (`NUMBA_NUM_THREADS`), o una GPU por rangos con CuPy. El código dentro de un rangos es el de los Notebooks 1 y 2, sin cambios.
 
 ## Planificación de tareas con Dask

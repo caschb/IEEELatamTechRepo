@@ -67,7 +67,6 @@ Python básico (funciones, bucles, listas), una cuenta de Google y un navegador.
 | `tools/validate.sh` | Regenera cada notebook y ejecuta los principales en modo fallback de CPU y en modo GPU |
 | `env/` | Entorno de autoría (`uv`) y lista mínima de paquetes para Colab |
 | `data/reference_timings/` | Tablas de tiempos registradas con metadatos del runtime, utilizadas por el fallback de CPU |
-| `archive/kabre/` | Edición anterior para clúster (SLURM, MPI, OnDemand); es histórica y no recibe mantenimiento |
 
 Ciclo de autoría:
 
