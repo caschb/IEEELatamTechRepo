@@ -51,15 +51,16 @@ Decir a todos que guarden (Ctrl+S). Los estudiantes que quieran probar el GPU pu
 
 ## 01:30 CuPy, sincronización, recorrida, transferencias, precisión (40 minutos), secciones 2.1 a 2.6
 
-- 01:30 Sección 2.1. El patrón `xp`. Punto de control 1: los mismos números en una memoria diferente.
-- 01:35 Sección 2.2. Ejecutar la celda de no-sinc versus sinc. Error común a surfear: "el GPU es tan rápido que el tiempo es cero". Preguntar qué contenía el reloj.
-- 01:41 Sección 2.3 predecir: "¿A qué n el GPU superará al CPU en este entorno?" Ejecutar. Preguntas de explicación 1 y 2. No establecer un tamaño de crossover; preguntar al cuarto por su tamaño, luego por el de la tabla de modo alternativo, y señalar que difieren.
+- 01:30 Sección 2.1. El patrón `xp`. Punto de control 1: los mismos números en una memoria diferente. Mostrar la figura de difusión solo unos segundos: sirve para que el cálculo deje de ser abstracto.
+- 01:35 Sección 2.2. Ejecutar la celda de no-sinc versus sinc. Error común a surfear: "el GPU es tan rápido que el tiempo es cero". Preguntar qué contenía el reloj. La gráfica de encolado frente a finalización responde la pregunta: la franja sombreada es lo que el reloj no vio.
+- 01:41 Sección 2.3 predecir: "¿A qué n el GPU superará al CPU en este entorno?" Ejecutar. Preguntas de explicación 1 y 2. No establecer un tamaño de crossover; preguntar al cuarto por su tamaño, luego por el de la tabla de modo alternativo, y señalar que difieren. En la gráfica de rendimiento, la recta que sube de la GPU es el costo fijo de lanzamiento.
 - 01:52 Apartado 2.4, transferencias. Pregunta: ¿transferir 32 MB cuesta más o menos
   que un paso de cálculo? En una T4 de Colab, la transferencia suele costar varios
   pasos. Mostrar juntos el tiempo de cálculo y el tiempo que incluye transferencias,
-  e indicar cuál se cita.
+  e indicar cuál se cita. La gráfica de la derecha resume la regla: las transferencias son un costo fijo que se amortiza con los pasos.
 - 02:01 Sección 2.5 float32 (CUT 2). Puntar el chequeo con una tolerancia más laxa, y que el ratio f64/f32 es una propiedad del recurso al que está ligado, no de "el GPU".
 - 02:06 Sección 2.6 brevemente, y Punto de control 2: guardar el CSV. Pregunta de salida: tres cosas para preguntar sobre "40x más rápido" (sincronización incluida, mismo trabajo y tipo de datos).
+- Las secciones 2.7 a 2.9 (PCIe, fusión de kernels, roofline) no se cubren en vivo. Si alguien pregunta por qué PyTorch o JAX compilan, o por qué el entrenamiento usa float16, remitirle al roofline de la sección 2.9.
 
 ## 02:10 Más allá de una máquina (20 minutos), notebook 03
 

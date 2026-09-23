@@ -49,6 +49,7 @@ demostración en GPU.
 ## 3. Después del evento
 
 - Diapositivas: [`instructor/slides.md`](instructor/slides.md)
+- Secciones 2.7 a 2.9 del notebook `02_gpu` (no se cubren en vivo): latencia de PCIe, fusión de kernels con `cp.RawKernel` y el modelo roofline
 - Extensiones opcionales (no se cubren en vivo):
   [hilos, procesos y el GIL](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_gil_and_task_pools.ipynb) y, en un entorno de ejecución de GPU, [escribir un kernel CUDA](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/extensions/ext_cuda_kernel.ipynb)
 - Guía de lectura para MPI y Dask más allá de una máquina: [`instructor/reading_guide_mpi_dask.md`](instructor/reading_guide_mpi_dask.md)
