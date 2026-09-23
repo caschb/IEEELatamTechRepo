@@ -117,6 +117,81 @@ El código de Python es el mismo para 2 trabajadores y 2000.
 
 ---
 
+# Cuaderno 05: dataframes, ML y marimo
+
+Después del evento, por cuenta propia. Un cuaderno **marimo**, no Jupyter.
+
+- Datos reales: el flujo de sismos del USGS, últimos 30 días.
+- **polars** medido contra **pandas**, en el mismo archivo y el mismo runtime.
+- **Regresión lineal** y **random forest** con scikit-learn, en CPU.
+- **RAPIDS (cuML)** al final: el mismo ML clásico, en la GPU.
+
+Cubre los temas 4, 5 y 6. Se ejecuta en molab, no en Colab:
+[molab.marimo.io/notebooks/nb_uXzyncAb9w2ZT27r2FuLdN](https://molab.marimo.io/notebooks/nb_uXzyncAb9w2ZT27r2FuLdN)
+
+---
+
+# ¿Por qué polars es más rápido?
+
+| Mecanismo | Qué significa |
+|---|---|
+| Multihilo por defecto | Satura todos los núcleos sin escribir código paralelo; pandas es de un solo hilo |
+| Disposición Apache Arrow | Columnar, amigable con la caché, sin copias entre herramientas |
+| Sin índice | No mantiene un índice de filas ni alinea por él: desaparece una clase de trabajo oculto |
+| Rust + SIMD | Núcleos compilados, con instrucciones vectoriales |
+| Evaluación diferida | `scan_csv` deja que un optimizador reordene, fusione y omita columnas |
+
+Con pocos datos la diferencia es irrelevante y pandas puede ganar: el costo fijo por
+operación es mayor. Se elige por tamaño de datos y dependencias, no por titulares.
+
+---
+
+# Evaluación ansiosa contra diferida
+
+```python
+pl.read_csv(ruta).filter(pl.col("mag") > 4).select(["mag", "depth"])  # ansiosa
+pl.scan_csv(ruta).filter(pl.col("mag") > 4).select(["mag", "depth"]).collect()  # diferida
+```
+
+- **Ansiosa**: lee todas las columnas y filas a memoria, y luego descarta casi todo.
+- **Diferida**: describe la consulta primero; el optimizador empuja el filtro y la
+  selección de columnas hacia dentro del escaneo.
+- `explain()` imprime el plan optimizado sin ejecutarlo. Leerlo es la habilidad.
+
+La misma idea que en HPC: no mover los datos que no se van a usar.
+
+---
+
+# `n_jobs=-1` no significa "usar la GPU"
+
+- scikit-learn es una biblioteca **de CPU**. `n_jobs` reparte entre núcleos, nada más.
+- `n_jobs=-1` cuenta núcleos **lógicos**; la curva de escalado se dobla en los **físicos**,
+  porque los hyperthreads comparten unidades de ejecución.
+- Debajo de scikit-learn hay grupos de hilos de **BLAS y OpenMP** que se multiplican con
+  `n_jobs`: sobresuscripción. `threadpoolctl` los muestra.
+- A la GPU se llega **cambiando de biblioteca**: RAPIDS (cuML, cuDF), XGBoost. Y solo
+  compensa cuando la razón entre cómputo y transferencia es alta.
+
+El mismo Amdahl del bloque 1, con otro vocabulario.
+
+---
+
+# Reportar el costo junto a la exactitud
+
+| Modelo | Exactitud | Costo de entrenamiento |
+|---|---|---|
+| Regresión lineal | baja | milisegundos |
+| Random forest | mucho mayor | órdenes de magnitud más |
+
+- Una tabla que solo muestra exactitud esconde la mitad de la decisión de ingeniería.
+- La validación cruzada dice si el resultado es **estable** o fue una partición afortunada.
+- Cada tiempo se escribe a CSV junto al hardware que lo produjo:
+  [`data/reference_timings/05_polars_ml.csv`](../data/reference_timings/05_polars_ml.csv).
+
+Un tiempo sin su hardware no es un resultado. Igual que en los cuadernos 01 y 02.
+
+---
+
 # Tabla de decisiones
 
 | Tienes | Llama a |

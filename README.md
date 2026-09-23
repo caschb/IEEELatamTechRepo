@@ -30,11 +30,12 @@ consultar primero el [repaso opcional](prep/python_numpy_refresher.md).
 | 00:10 | 25 | Medición: tiempos repetidos, calentamiento, demostración de perfilado, base de NumPy | [`01_measure_and_multicore`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/01_measure_and_multicore.ipynb) |
 | 00:35 | 35 | Numba, `prange`, comparación de hilos, Amdahl | mismo notebook |
 | 01:10 | 10 | Descanso (guardar el trabajo) | |
-| 01:20 | 10 | Cambio a un runtime de GPU, configuración, verificación del dispositivo | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
-| 01:30 | 40 | Stencil con CuPy, sincronización, barrido de tamaños, transferencias, precisión | mismo notebook |
-| 02:10 | 20 | Más allá de una máquina: particiones, halos, comunicación, roles de MPI y Dask | [`03_parallel_models`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/03_parallel_models.ipynb) |
-| 02:30 | 20 | Proyecto final: elegir y justificar una implementación | [`04_capstone`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/04_capstone.ipynb) |
-| 02:50 | 10 | Revisión, preguntas, pasos siguientes | |
+| 01:20 | 5 | Cambio a un runtime de GPU, configuración, verificación del dispositivo | [`02_gpu`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/02_gpu.ipynb) |
+| 01:25 | 20 | Stencil con CuPy, sincronización, barrido de tamaños, transferencias, precisión | mismo notebook |
+| 01:45 | 20 | Más allá de una máquina: particiones, halos, comunicación, roles de MPI y Dask | [`03_parallel_models`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/03_parallel_models.ipynb) |
+| 02:05 | 20 | Proyecto final: elegir y justificar una implementación | [`04_capstone`](https://colab.research.google.com/github/caschb/IEEELatamTechRepo/blob/main/notebooks/04_capstone.ipynb) |
+| 02:25 | 10 | Revisión, preguntas, pasos siguientes | |
+| 02:25 | 15 | marimo Notebook EDA + ML | [`05_marimo`](https://molab.marimo.io/notebooks/nb_uXzyncAb9w2ZT27r2FuLdN) |
 
 Cada notebook es autónomo: su primera celda de código instala lo que falta y debe
 ejecutarse de nuevo después de reiniciar el runtime. Los tiempos se comparan
@@ -53,6 +54,36 @@ demostración en GPU.
 - Guía de lectura para MPI y Dask más allá de una máquina: [`instructor/reading_guide_mpi_dask.md`](instructor/reading_guide_mpi_dask.md)
 - Soluciones: [`solutions/`](solutions/)
 
+### 4. marimo y molab
+
+El cuaderno 05 **no es un notebook de Jupyter**: es una aplicación
+[marimo](https://marimo.io). Se ejecuta en su propio entorno y no se abre en Colab como
+los demás.
+
+| Propiedad | Qué implica |
+|---|---|
+| Grafo reactivo | Al mover un control, todas las celdas que dependen de él se recalculan solas |
+| Sin estado oculto | Al borrar una celda desaparecen sus variables; no sobrevive un modelo obsoleto |
+| Orden determinista | Las celdas corren en orden de dependencias, no en el orden en que se hizo clic |
+| Se guarda como `.py` | El archivo es un módulo de Python: diffs limpios en git |
+
+### Ejecutarlo en molab
+
+[molab](https://molab.marimo.io) es el servicio de cuadernos alojados de marimo, el
+equivalente a Colab para este formato. Es la vía más rápida si no se desea instalar nada:
+
+El cuaderno ya está publicado, así que basta con abrirlo:
+
+**[Abrir el cuaderno 05 en molab](https://molab.marimo.io/notebooks/nb_uXzyncAb9w2ZT27r2FuLdN)**
+
+1. Abrir el enlace e iniciar sesión.
+2. Crear una copia propia para poder editarla y guardar los cambios.
+3. Ejecutar. La primera celda instala lo que falte.
+
+Para partir del archivo del repositorio en lugar del cuaderno publicado (por ejemplo,
+tras modificarlo), se crea un cuaderno nuevo en [molab.marimo.io](https://molab.marimo.io)
+y se sube `notebooks/05_polars_dataframes.py`.
+
 ## Requisitos previos
 
 Python básico (funciones, bucles, listas), una cuenta de Google y un navegador. Todo lo demás se instala por los notebooks.
@@ -64,6 +95,7 @@ Python básico (funciones, bucles, listas), una cuenta de Google y un navegador.
 | `instructor/run_of_show.md` | Marcas de tiempo, preguntas, errores frecuentes, respuestas, triaje de configuración y dos recortes previstos |
 | `instructor/validation.md` | Criterios de publicación y verificaciones manuales de Colab que el script no realiza |
 | `notebooks/*.py` | Fuentes de los notebooks en formato porcentual de Jupytext; a partir de ellas se generan los archivos `.ipynb` |
+| `notebooks/05_polars_dataframes.py` | Cuaderno 05: aplicación **marimo**, no Jupytext. No se convierte a `.ipynb`; se valida con `marimo export html` |
 | `tools/validate.sh` | Regenera cada notebook y ejecuta los principales en modo fallback de CPU y en modo GPU |
 | `env/` | Entorno de autoría (`uv`) y lista mínima de paquetes para Colab |
 | `data/reference_timings/` | Tablas de tiempos registradas con metadatos del runtime, utilizadas por el fallback de CPU |
@@ -72,5 +104,4 @@ Ciclo de autoría:
 
 ```bash
 uv sync --project env            # agregar --extra gpu en una máquina con GPU NVIDIA
-GPU_EXTRA=1 tools/validate.sh    # regenerar los .ipynb desde .py y ejecutar los notebooks principales
 ```
