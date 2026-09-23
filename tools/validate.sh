@@ -14,7 +14,8 @@ $UV jupytext --quiet --to ipynb notebooks/*.py extensions/*.py solutions/*.py ||
 git status --porcelain -- '*.ipynb' | sed 's/^/   changed: /'
 
 CORE="notebooks/00_colab_ready.ipynb solutions/00_stencil_practice_solution.ipynb notebooks/00_stencil_practice.ipynb \
-      notebooks/01_measure_and_multicore.ipynb notebooks/02_gpu.ipynb notebooks/03_parallel_models.ipynb notebooks/04_capstone.ipynb"
+      notebooks/01_measure_and_multicore.ipynb notebooks/02_gpu.ipynb notebooks/03_parallel_models.ipynb notebooks/04_capstone.ipynb \
+      solutions/01_04_exercise_solutions.ipynb"
 status=0
 run_mode() {   # $1 = mode label, $2 = env assignment
   local mode=$1 envset=$2
